@@ -1,8 +1,8 @@
-# FreshKeeper - Simple Setup Guide
+# FreshKeeper - Xcode Project Setup
 
-## ⚠️ Important: Don't try to open the old .xcodeproj
+⚠️ **Important**: You need to create a fresh Xcode project. Don't try to open an existing .xcodeproj file.
 
-The project needs to be created fresh through Xcode. Follow these exact steps:
+This guide will walk you through creating the project and adding the source files. **Takes about 5 minutes.**
 
 ---
 
