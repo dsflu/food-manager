@@ -151,11 +151,14 @@ struct ContentView: View {
                 .opacity(0.3)
 
             Text("Your inventory is empty")
-                .font(.title2)
-                .fontWeight(.semibold)
+                .font(.system(.title2, design: .rounded))
+                .fontWeight(.bold)
+                .foregroundColor(Color(hex: "1A1A1A"))
 
             Text("Start by adding your first food item")
-                .foregroundStyle(.secondary)
+                .font(.system(.body, design: .rounded))
+                .fontWeight(.medium)
+                .foregroundColor(Color(hex: "666666"))
 
             Button {
                 showingAddItem = true
@@ -184,15 +187,18 @@ struct StatCard: View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(.system(.caption, design: .rounded))
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color(hex: "666666"))
                 Text(value)
-                    .font(.title2)
-                    .fontWeight(.bold)
+                    .font(.system(.title2, design: .rounded))
+                    .fontWeight(.heavy)
+                    .foregroundColor(Color(hex: "1A1A1A"))
             }
             Spacer()
             Image(systemName: icon)
                 .font(.title2)
+                .fontWeight(.semibold)
                 .foregroundColor(color)
         }
         .padding()
@@ -213,16 +219,17 @@ struct FilterChip: View {
             HStack(spacing: 6) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.caption)
+                        .font(.system(.caption, design: .rounded))
+                        .fontWeight(.semibold)
                 }
                 Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.system(.subheadline, design: .rounded))
+                    .fontWeight(.semibold)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(isSelected ? Color(hex: "4CAF50") : Color.white)
-            .foregroundColor(isSelected ? .white : .primary)
+            .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
             .cornerRadius(20)
             .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
         }

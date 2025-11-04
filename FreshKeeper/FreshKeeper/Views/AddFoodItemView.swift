@@ -36,9 +36,9 @@ struct AddFoodItemView: View {
                             // Name Field
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Food Name", systemImage: "text.cursor")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
 
                                 TextField("e.g., Chicken Breast", text: $name)
                                     .textFieldStyle(CustomTextFieldStyle())
@@ -47,9 +47,9 @@ struct AddFoodItemView: View {
                             // Quantity Stepper
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Quantity", systemImage: "cube.box.fill")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
 
                                 HStack {
                                     Button {
@@ -59,15 +59,16 @@ struct AddFoodItemView: View {
                                     } label: {
                                         Image(systemName: "minus.circle.fill")
                                             .font(.title2)
-                                            .foregroundColor(quantity > 1 ? Color(hex: "FF5722") : .gray)
+                                            .foregroundColor(quantity > 1 ? Color(hex: "FF5722") : Color(hex: "CCCCCC"))
                                     }
                                     .disabled(quantity <= 1)
 
                                     Spacer()
 
                                     Text("\(quantity)")
-                                        .font(.title)
-                                        .fontWeight(.bold)
+                                        .font(.system(.title, design: .rounded))
+                                        .fontWeight(.heavy)
+                                        .foregroundColor(Color(hex: "1A1A1A"))
                                         .frame(minWidth: 60)
 
                                     Spacer()
@@ -88,9 +89,9 @@ struct AddFoodItemView: View {
                             // Storage Location Picker
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Storage Location", systemImage: "refrigerator")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
 
                                 HStack(spacing: 12) {
                                     ForEach(StorageLocation.allCases, id: \.self) { location in
@@ -109,9 +110,9 @@ struct AddFoodItemView: View {
                             // Category Picker
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Category", systemImage: "tag.fill")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
 
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 12) {
@@ -132,9 +133,9 @@ struct AddFoodItemView: View {
                             // Notes Field
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Notes (Optional)", systemImage: "note.text")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
 
                                 TextField("Add any notes...", text: $notes, axis: .vertical)
                                     .textFieldStyle(CustomTextFieldStyle())
@@ -246,12 +247,14 @@ struct AddFoodItemView: View {
 
                         VStack(spacing: 4) {
                             Text("Add Photo")
-                                .font(.headline)
-                                .foregroundColor(.primary)
+                                .font(.system(.headline, design: .rounded))
+                                .fontWeight(.bold)
+                                .foregroundColor(Color(hex: "1A1A1A"))
 
                             Text("Take a photo or choose from library")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(.system(.caption, design: .rounded))
+                                .fontWeight(.medium)
+                                .foregroundColor(Color(hex: "666666"))
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -300,9 +303,11 @@ struct AddFoodItemView: View {
 struct CustomTextFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
+            .font(.system(.body, design: .rounded))
+            .fontWeight(.medium)
             .padding()
             .background(Color.white)
-            .foregroundColor(.primary)
+            .foregroundColor(Color(hex: "1A1A1A"))
             .tint(Color(hex: "4CAF50"))
             .cornerRadius(12)
             .overlay(
@@ -322,15 +327,16 @@ struct LocationButton: View {
             VStack(spacing: 8) {
                 Image(systemName: location.icon)
                     .font(.title2)
+                    .fontWeight(.semibold)
 
                 Text(location.rawValue)
-                    .font(.caption)
-                    .fontWeight(.medium)
+                    .font(.system(.caption, design: .rounded))
+                    .fontWeight(.bold)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 16)
             .background(isSelected ? Color(hex: "4CAF50") : Color.white)
-            .foregroundColor(isSelected ? .white : .primary)
+            .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
@@ -351,13 +357,13 @@ struct CategoryChip: View {
                 Text(category.icon)
                     .font(.body)
                 Text(category.rawValue)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.system(.subheadline, design: .rounded))
+                    .fontWeight(.semibold)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(isSelected ? Color(hex: "4CAF50") : Color.white)
-            .foregroundColor(isSelected ? .white : .primary)
+            .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)

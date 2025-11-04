@@ -54,20 +54,23 @@ struct FoodItemCard: View {
             // Info Section
             VStack(alignment: .leading, spacing: 8) {
                 Text(item.name)
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                    .font(.system(.headline, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: "1A1A1A"))
                     .lineLimit(1)
 
                 HStack {
                     Label("\(item.quantity)", systemImage: "cube.box.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.system(.subheadline, design: .rounded))
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color(hex: "4CAF50"))
 
                     Spacer()
 
                     Text(timeAgo(from: item.dateAdded))
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .font(.system(.caption, design: .rounded))
+                        .fontWeight(.medium)
+                        .foregroundColor(Color(hex: "999999"))
                 }
             }
             .padding(12)
