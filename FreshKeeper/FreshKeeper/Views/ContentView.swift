@@ -295,13 +295,24 @@ struct ContentView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
                 ForEach(foodCategories) { category in
-                    CategoryChip(
-                        category: category,
-                        isSelected: selectedCategory?.id == category.id
-                    ) {
+                    Button {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                             selectedCategory = selectedCategory?.id == category.id ? nil : category
                         }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(category.icon)
+                                .font(.system(.caption, design: .rounded))
+                            Text(category.name)
+                                .font(.system(.subheadline, design: .rounded))
+                                .fontWeight(.semibold)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(selectedCategory?.id == category.id ? Color(hex: "2196F3") : Color.white)
+                        .foregroundColor(selectedCategory?.id == category.id ? .white : Color(hex: "1A1A1A"))
+                        .cornerRadius(20)
+                        .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
                     }
                 }
             }
@@ -477,30 +488,6 @@ struct FilterChip: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(isSelected ? Color(hex: "4CAF50") : Color.white)
-            .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
-            .cornerRadius(20)
-            .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
-        }
-    }
-}
-
-struct CategoryChip: View {
-    let category: FoodCategory
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 6) {
-                Text(category.icon)
-                    .font(.system(.caption, design: .rounded))
-                Text(category.name)
-                    .font(.system(.subheadline, design: .rounded))
-                    .fontWeight(.semibold)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(isSelected ? Color(hex: "2196F3") : Color.white)
             .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
             .cornerRadius(20)
             .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)

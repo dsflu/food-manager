@@ -24,72 +24,155 @@ struct FoodItemDetailView: View {
         ScrollView {
             VStack(spacing: 24) {
                 // Photo Section
-                if let photoData = item.photoData,
-                   let uiImage = UIImage(data: photoData) {
-                    ZStack(alignment: .topTrailing) {
-                        Image(uiImage: uiImage)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(height: 300)
-                            .frame(maxWidth: .infinity)
-                            .clipped()
-                            .cornerRadius(20)
-                            .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
-
-                        // Edit photo button
-                        Button {
-                            showEditPhoto = true
-                        } label: {
-                            Image(systemName: "camera.fill")
-                                .font(.title3)
-                                .foregroundColor(.white)
-                                .padding(12)
-                                .background(Color.black.opacity(0.6))
-                                .clipShape(Circle())
-                        }
-                        .padding(16)
-                    }
-                    .padding(.horizontal)
-                } else {
-                    Button {
-                        showCamera = true
-                    } label: {
-                        ZStack {
-                            LinearGradient(
-                                colors: [
-                                    Color(hex: "E3F2FD"),
-                                    Color(hex: "BBDEFB")
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-
-                            VStack(spacing: 12) {
-                                Text(item.category?.icon ?? "📦")
-                                    .font(.system(size: 100))
-
-                                HStack(spacing: 8) {
-                                    Image(systemName: "camera.fill")
-                                        .font(.title3)
-                                    Text("Add Photo")
-                                        .font(.headline)
-                                }
-                                .foregroundColor(Color(hex: "2196F3"))
-                                .padding(.horizontal, 20)
-                                .padding(.vertical, 10)
-                                .background(Color.white)
-                                .cornerRadius(12)
-                            }
-                        }
-                        .frame(height: 300)
-                        .cornerRadius(20)
-                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
-                    }
-                    .padding(.horizontal)
-                }
+                photoSection
 
                 // Info Cards
-                VStack(spacing: 16) {
+                infoCardsSection
+            }
+            .padding(.vertical)
+        }
+        .background(Color(hex: "F8F9FA"))
+        .navigationTitle(item.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showEditName = true
+                } label: {
+                    Image(systemName: "pencil.circle.fill")
+                        .foregroundColor(Color(hex: "2196F3"))
+                }
+            }
+        }
+        .confirmationDialog(
+            "Delete this item?",
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete", role: .destructive) {
+                deleteItem()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This action cannot be undone.")
+        }
+        .sheet(isPresented: $showEditLocation) {
+            EditLocationSheet(item: item)
+        }
+        .sheet(isPresented: $showEditCategory) {
+            EditCategorySheet(item: item)
+        }
+        .sheet(isPresented: $showEditExpiry) {
+            EditExpirySheet(item: item)
+        }
+        .sheet(isPresented: $showEditName) {
+            EditNameSheet(item: item)
+        }
+        .confirmationDialog(
+            "Edit Photo",
+            isPresented: $showEditPhoto,
+            titleVisibility: .visible
+        ) {
+            Button("Retake Photo") {
+                showCamera = true
+            }
+            Button("Remove Photo", role: .destructive) {
+                item.photoData = nil
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .sheet(isPresented: $showCamera) {
+            CameraView { image in
+                if let jpegData = image.jpegData(compressionQuality: 0.8) {
+                    item.photoData = jpegData
+                }
+                showCamera = false
+            }
+            .ignoresSafeArea()
+        }
+    }
+
+    private var photoSection: some View {
+        Group {
+            if let photoData = item.photoData,
+               let uiImage = UIImage(data: photoData) {
+                photoWithEditButton(image: uiImage)
+            } else {
+                addPhotoButton
+            }
+        }
+    }
+
+    private func photoWithEditButton(image: UIImage) -> some View {
+        ZStack(alignment: .topTrailing) {
+            Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(height: 300)
+                .frame(maxWidth: .infinity)
+                .clipped()
+                .cornerRadius(20)
+                .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
+
+            Button {
+                showEditPhoto = true
+            } label: {
+                Image(systemName: "camera.fill")
+                    .font(.title3)
+                    .foregroundColor(.white)
+                    .padding(12)
+                    .background(Color.black.opacity(0.6))
+                    .clipShape(Circle())
+            }
+            .padding(16)
+        }
+        .padding(.horizontal)
+    }
+
+    private var addPhotoButton: some View {
+        Button {
+            showCamera = true
+        } label: {
+            addPhotoContent
+        }
+        .padding(.horizontal)
+    }
+
+    private var addPhotoContent: some View {
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color(hex: "E3F2FD"),
+                    Color(hex: "BBDEFB")
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+
+            VStack(spacing: 12) {
+                Text(item.category?.icon ?? "📦")
+                    .font(.system(size: 100))
+
+                HStack(spacing: 8) {
+                    Image(systemName: "camera.fill")
+                        .font(.title3)
+                    Text("Add Photo")
+                        .font(.headline)
+                }
+                .foregroundColor(Color(hex: "2196F3"))
+                .padding(.horizontal, 20)
+                .padding(.vertical, 10)
+                .background(Color.white)
+                .cornerRadius(12)
+            }
+        }
+        .frame(height: 300)
+        .cornerRadius(20)
+        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+    }
+
+    private var infoCardsSection: some View {
+        VStack(spacing: 16) {
                     // Quantity Card with Update Controls
                     VStack(spacing: 20) {
                         HStack {
@@ -235,67 +318,6 @@ struct FoodItemDetailView: View {
                     }
                     .padding(.horizontal)
                 }
-            }
-            .padding(.vertical)
-        }
-        .background(Color(hex: "F8F9FA"))
-        .navigationTitle(item.name)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showEditName = true
-                } label: {
-                    Image(systemName: "pencil.circle.fill")
-                        .foregroundColor(Color(hex: "2196F3"))
-                }
-            }
-        }
-        .confirmationDialog(
-            "Delete this item?",
-            isPresented: $showDeleteConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) {
-                deleteItem()
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This action cannot be undone.")
-        }
-        .sheet(isPresented: $showEditLocation) {
-            EditLocationSheet(item: item)
-        }
-        .sheet(isPresented: $showEditCategory) {
-            EditCategorySheet(item: item)
-        }
-        .sheet(isPresented: $showEditExpiry) {
-            EditExpirySheet(item: item)
-        }
-        .sheet(isPresented: $showEditName) {
-            EditNameSheet(item: item)
-        }
-        .confirmationDialog(
-            "Edit Photo",
-            isPresented: $showEditPhoto,
-            titleVisibility: .visible
-        ) {
-            Button("Retake Photo") {
-                showCamera = true
-            }
-            Button("Remove Photo", role: .destructive) {
-                item.photoData = nil
-            }
-            Button("Cancel", role: .cancel) {}
-        }
-        .sheet(isPresented: $showCamera) {
-            CameraView { image in
-                if let jpegData = image.jpegData(compressionQuality: 0.8) {
-                    item.photoData = jpegData
-                }
-                showCamera = false
-            }
-            .ignoresSafeArea()
         }
     }
 
