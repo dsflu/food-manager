@@ -10,11 +10,12 @@ struct AddFoodItemView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \StorageLocation.sortOrder) private var storageLocations: [StorageLocation]
+    @Query(sort: \FoodCategory.sortOrder) private var foodCategories: [FoodCategory]
 
     @State private var name = ""
     @State private var quantity = 1
     @State private var selectedLocation: StorageLocation?
-    @State private var selectedCategory: FoodCategory = .other
+    @State private var selectedCategory: FoodCategory?
     @State private var notes = ""
     @State private var capturedImage: UIImage?
     @State private var showCamera = false
@@ -23,6 +24,9 @@ struct AddFoodItemView: View {
     @State private var hasExpiryDate = false
     @State private var expiryDate = Date().addingTimeInterval(7 * 24 * 60 * 60) // Default 7 days from now
     @State private var daysUntilExpiry = 7
+    @State private var showAddCategory = false
+    @State private var customCategoryName = ""
+    @State private var customCategoryIcon = "📦"
 
     var body: some View {
         NavigationStack {
@@ -122,15 +126,37 @@ struct AddFoodItemView: View {
 
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 12) {
-                                        ForEach(FoodCategory.allCases, id: \.self) { category in
+                                        ForEach(foodCategories) { category in
                                             CategoryChip(
                                                 category: category,
-                                                isSelected: selectedCategory == category
+                                                isSelected: selectedCategory?.id == category.id
                                             ) {
                                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                                     selectedCategory = category
                                                 }
                                             }
+                                        }
+
+                                        // Add custom category button
+                                        Button {
+                                            showAddCategory = true
+                                        } label: {
+                                            HStack(spacing: 6) {
+                                                Image(systemName: "plus.circle.fill")
+                                                    .font(.system(.caption, design: .rounded))
+                                                Text("Add Custom")
+                                                    .font(.system(.subheadline, design: .rounded))
+                                                    .fontWeight(.semibold)
+                                            }
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 10)
+                                            .background(Color(hex: "E3F2FD"))
+                                            .foregroundColor(Color(hex: "2196F3"))
+                                            .cornerRadius(20)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .stroke(Color(hex: "2196F3"), lineWidth: 1.5)
+                                            )
                                         }
                                     }
                                 }
@@ -268,6 +294,25 @@ struct AddFoodItemView: View {
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(image: $capturedImage)
             }
+            .sheet(isPresented: $showAddCategory) {
+                AddCustomCategorySheet(
+                    categoryName: $customCategoryName,
+                    categoryIcon: $customCategoryIcon,
+                    onSave: {
+                        let newCategory = FoodCategory(
+                            name: customCategoryName,
+                            icon: customCategoryIcon,
+                            sortOrder: (foodCategories.map { $0.sortOrder }.max() ?? -1) + 1,
+                            isDefault: false
+                        )
+                        modelContext.insert(newCategory)
+                        selectedCategory = newCategory
+                        customCategoryName = ""
+                        customCategoryIcon = "📦"
+                        showAddCategory = false
+                    }
+                )
+            }
             .confirmationDialog("Choose Photo Source", isPresented: $showImageOptions) {
                 Button("Take Photo") {
                     showCamera = true
@@ -286,6 +331,10 @@ struct AddFoodItemView: View {
                 // Set default storage location to first one (Fridge)
                 if selectedLocation == nil && !storageLocations.isEmpty {
                     selectedLocation = storageLocations.first
+                }
+                // Set default category to "Other"
+                if selectedCategory == nil && !foodCategories.isEmpty {
+                    selectedCategory = foodCategories.first(where: { $0.name == "Other" }) ?? foodCategories.first
                 }
             }
         }
@@ -376,14 +425,14 @@ struct AddFoodItemView: View {
         let item = FoodItem(
             name: name,
             quantity: quantity,
-            category: selectedCategory,
             expiryDate: hasExpiryDate ? expiryDate : nil,
             photoData: imageData,
             notes: notes
         )
 
-        // Set the storage location relationship
+        // Set relationships
         item.storageLocation = selectedLocation
+        item.category = selectedCategory
 
         modelContext.insert(item)
         dismiss()
@@ -447,7 +496,7 @@ struct CategoryChip: View {
             HStack(spacing: 6) {
                 Text(category.icon)
                     .font(.body)
-                Text(category.rawValue)
+                Text(category.name)
                     .font(.system(.subheadline, design: .rounded))
                     .fontWeight(.semibold)
             }
@@ -460,6 +509,77 @@ struct CategoryChip: View {
                 RoundedRectangle(cornerRadius: 20)
                     .stroke(isSelected ? Color(hex: "4CAF50") : Color.gray.opacity(0.2), lineWidth: 1.5)
             )
+        }
+    }
+}
+
+struct AddCustomCategorySheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var categoryName: String
+    @Binding var categoryIcon: String
+    let onSave: () -> Void
+
+    let availableIcons = [
+        "🥩", "🍗", "🐟", "🥬", "🥕", "🍎", "🍊", "🥛",
+        "🧀", "🍞", "🥐", "🍕", "🍔", "🍱", "🍜", "🧃",
+        "☕", "🍰", "🍪", "🥫", "🌰", "🥚", "🍚", "📦"
+    ]
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Category Name", text: $categoryName)
+                        .font(.system(.body, design: .rounded))
+                        .foregroundColor(Color(hex: "1A1A1A"))
+                }
+
+                Section(header: Text("Choose Icon")) {
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ],
+                        spacing: 12
+                    ) {
+                        ForEach(availableIcons, id: \.self) { icon in
+                            Button {
+                                categoryIcon = icon
+                            } label: {
+                                Text(icon)
+                                    .font(.system(size: 32))
+                                    .frame(width: 50, height: 50)
+                                    .background(categoryIcon == icon ? Color(hex: "E8F4F8") : Color.clear)
+                                    .cornerRadius(8)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(categoryIcon == icon ? Color(hex: "4CAF50") : Color.clear, lineWidth: 2)
+                                    )
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Add Category")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        onSave()
+                    }
+                    .disabled(categoryName.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
         }
     }
 }

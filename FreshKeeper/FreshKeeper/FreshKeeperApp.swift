@@ -10,27 +10,49 @@ import SwiftData
 
 @main
 struct FreshKeeperApp: App {
+    init() {
+        // Configure UI appearance for better visibility
+        // Set darker placeholder color for TextFields (default is too light)
+        if let placeholderColor = UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1.0) as UIColor? {
+            UITextField.appearance().tintColor = UIColor(red: 0.29, green: 0.69, blue: 0.31, alpha: 1.0) // #4CAF50 for cursor
+        }
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             FoodItem.self,
-            StorageLocation.self
+            StorageLocation.self,
+            FoodCategory.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
 
-            // Seed default storage locations if needed
+            // Seed default storage locations and categories if needed
             let context = container.mainContext
-            let descriptor = FetchDescriptor<StorageLocation>()
-            let existingLocations = try? context.fetch(descriptor)
+
+            // Seed storage locations
+            let locationDescriptor = FetchDescriptor<StorageLocation>()
+            let existingLocations = try? context.fetch(locationDescriptor)
 
             if existingLocations == nil || existingLocations?.isEmpty == true {
                 for location in StorageLocation.createDefaults() {
                     context.insert(location)
                 }
-                try? context.save()
             }
+
+            // Seed categories
+            let categoryDescriptor = FetchDescriptor<FoodCategory>()
+            let existingCategories = try? context.fetch(categoryDescriptor)
+
+            if existingCategories == nil || existingCategories?.isEmpty == true {
+                for category in FoodCategory.createDefaults() {
+                    context.insert(category)
+                }
+            }
+
+            try? context.save()
 
             return container
         } catch {

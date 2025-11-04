@@ -16,6 +16,7 @@ struct FoodItemDetailView: View {
     @State private var showEditLocation = false
     @State private var showEditCategory = false
     @State private var showEditExpiry = false
+    @State private var showEditName = false
 
     var body: some View {
         ScrollView {
@@ -121,7 +122,7 @@ struct FoodItemDetailView: View {
                         EditableDetailRow(
                             icon: "tag.fill",
                             label: "Category",
-                            value: "\(item.category.icon) \(item.category.rawValue)",
+                            value: item.category != nil ? "\(item.category!.icon) \(item.category!.name)" : "Unknown",
                             onEdit: { showEditCategory = true }
                         )
 
@@ -205,6 +206,16 @@ struct FoodItemDetailView: View {
         .background(Color(hex: "F8F9FA"))
         .navigationTitle(item.name)
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    showEditName = true
+                } label: {
+                    Image(systemName: "pencil.circle.fill")
+                        .foregroundColor(Color(hex: "2196F3"))
+                }
+            }
+        }
         .confirmationDialog(
             "Delete this item?",
             isPresented: $showDeleteConfirmation,
@@ -225,6 +236,9 @@ struct FoodItemDetailView: View {
         }
         .sheet(isPresented: $showEditExpiry) {
             EditExpirySheet(item: item)
+        }
+        .sheet(isPresented: $showEditName) {
+            EditNameSheet(item: item)
         }
     }
 
@@ -377,22 +391,23 @@ struct EditLocationSheet: View {
 
 struct EditCategorySheet: View {
     @Environment(\.dismiss) var dismiss
+    @Query(sort: \FoodCategory.sortOrder) private var foodCategories: [FoodCategory]
     @Bindable var item: FoodItem
 
     var body: some View {
         NavigationStack {
             List {
-                ForEach(FoodCategory.allCases, id: \.self) { category in
+                ForEach(foodCategories) { category in
                     Button {
                         item.category = category
                         dismiss()
                     } label: {
                         HStack {
                             Text(category.icon)
-                            Text(category.rawValue)
+                            Text(category.name)
                                 .foregroundColor(Color(hex: "1A1A1A"))
                             Spacer()
-                            if item.category == category {
+                            if item.category?.id == category.id {
                                 Image(systemName: "checkmark")
                                     .foregroundColor(Color(hex: "4CAF50"))
                             }
@@ -474,6 +489,48 @@ struct EditExpirySheet: View {
                         item.expiryDate = hasExpiry ? expiryDate : nil
                         dismiss()
                     }
+                }
+            }
+        }
+    }
+}
+
+struct EditNameSheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Bindable var item: FoodItem
+    @State private var editedName: String
+
+    init(item: FoodItem) {
+        self.item = item
+        _editedName = State(initialValue: item.name)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    TextField("Food name", text: $editedName)
+                        .font(.system(.body, design: .rounded))
+                        .foregroundColor(Color(hex: "1A1A1A"))
+                }
+            }
+            .navigationTitle("Edit Name")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        if !editedName.trimmingCharacters(in: .whitespaces).isEmpty {
+                            item.name = editedName.trimmingCharacters(in: .whitespaces)
+                        }
+                        dismiss()
+                    }
+                    .disabled(editedName.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }

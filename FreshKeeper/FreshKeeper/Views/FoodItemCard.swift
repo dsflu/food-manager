@@ -30,7 +30,7 @@ struct FoodItemCard: View {
                             endPoint: .bottomTrailing
                         )
 
-                        Text(item.category.icon)
+                        Text(item.category?.icon ?? "📦")
                             .font(.system(size: 50))
                     }
                     .frame(height: 140)
@@ -75,19 +75,23 @@ struct FoodItemCard: View {
                         .foregroundColor(Color(hex: "999999"))
                 }
 
-                // Expiry Warning
-                if item.isExpired || item.isExpiringSoon {
+                // Expiry Information - Show for all items with expiry date
+                if item.expiryDate != nil {
                     HStack(spacing: 4) {
-                        Image(systemName: item.isExpired ? "exclamationmark.triangle.fill" : "clock.fill")
+                        Image(systemName: item.isExpired ? "exclamationmark.triangle.fill" : item.isExpiringSoon ? "clock.fill" : "calendar")
                             .font(.caption2)
                         Text(expiryText())
                             .font(.system(.caption2, design: .rounded))
                             .fontWeight(.bold)
                     }
-                    .foregroundColor(.white)
+                    .foregroundColor(item.isExpired || item.isExpiringSoon ? .white : Color(hex: "1A1A1A"))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(item.isExpired ? Color(hex: "F44336") : Color(hex: "FF9800"))
+                    .background(
+                        item.isExpired ? Color(hex: "F44336") :
+                        item.isExpiringSoon ? Color(hex: "FF9800") :
+                        Color(hex: "E8F4F8")
+                    )
                     .cornerRadius(6)
                 }
             }
@@ -107,9 +111,9 @@ struct FoodItemCard: View {
     private func expiryText() -> String {
         if item.isExpired {
             let days = abs(item.daysUntilExpiry ?? 0)
-            return "Expired \(days)d ago"
+            return days == 0 ? "Expired today" : "Expired \(days)d ago"
         } else if let days = item.daysUntilExpiry {
-            return days == 0 ? "Expires today" : "Expires in \(days)d"
+            return days == 0 ? "Expires today" : days == 1 ? "Expires tomorrow" : "Expires in \(days)d"
         }
         return ""
     }
