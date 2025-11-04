@@ -317,7 +317,6 @@ struct FoodItemDetailView: View {
                             .cornerRadius(12)
                     }
                     .padding(.horizontal)
-                }
         }
     }
 

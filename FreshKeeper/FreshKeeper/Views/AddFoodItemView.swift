@@ -141,7 +141,7 @@ struct AddFoodItemView: View {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 12) {
                                         ForEach(foodCategories) { category in
-                                            CategoryChip(
+                                            AddCategoryChip(
                                                 category: category,
                                                 isSelected: selectedCategory?.id == category.id
                                             ) {
@@ -514,7 +514,7 @@ struct LocationButton: View {
     }
 }
 
-struct CategoryChip: View {
+struct AddCategoryChip: View {
     let category: FoodCategory
     let isSelected: Bool
     let action: () -> Void
