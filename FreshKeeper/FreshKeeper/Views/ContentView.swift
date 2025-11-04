@@ -58,6 +58,24 @@ struct ContentView: View {
             .navigationTitle("FreshKeeper")
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $searchText, prompt: "Search food items...")
+            .onAppear {
+                // Make navigation title dark and visible
+                let appearance = UINavigationBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = UIColor(Color(hex: "E8F4F8"))
+                appearance.largeTitleTextAttributes = [
+                    .foregroundColor: UIColor(Color(hex: "1A1A1A")),
+                    .font: UIFont.systemFont(ofSize: 34, weight: .bold)
+                ]
+                appearance.titleTextAttributes = [
+                    .foregroundColor: UIColor(Color(hex: "1A1A1A")),
+                    .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
+                ]
+
+                UINavigationBar.appearance().standardAppearance = appearance
+                UINavigationBar.appearance().scrollEdgeAppearance = appearance
+                UINavigationBar.appearance().compactAppearance = appearance
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {

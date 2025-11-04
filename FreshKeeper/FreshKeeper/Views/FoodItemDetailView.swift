@@ -13,6 +13,9 @@ struct FoodItemDetailView: View {
     @Bindable var item: FoodItem
     @State private var showDeleteConfirmation = false
     @State private var showUpdateAnimation = false
+    @State private var showEditLocation = false
+    @State private var showEditCategory = false
+    @State private var showEditExpiry = false
 
     var body: some View {
         ScrollView {
@@ -56,7 +59,7 @@ struct FoodItemDetailView: View {
                         HStack {
                             Label("Current Stock", systemImage: "cube.box.fill")
                                 .font(.headline)
-                                .foregroundStyle(.secondary)
+                                .foregroundColor(Color(hex: "666666"))
                             Spacer()
                         }
 
@@ -85,7 +88,7 @@ struct FoodItemDetailView: View {
 
                                 Text("items")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundColor(Color(hex: "666666"))
                             }
                             .frame(minWidth: 120)
 
@@ -106,18 +109,20 @@ struct FoodItemDetailView: View {
 
                     // Details Card
                     VStack(spacing: 16) {
-                        DetailRow(
+                        EditableDetailRow(
                             icon: "mappin.and.ellipse",
                             label: "Storage Location",
-                            value: item.storageLocation?.name ?? "Unknown"
+                            value: item.storageLocation?.name ?? "Unknown",
+                            onEdit: { showEditLocation = true }
                         )
 
                         Divider()
 
-                        DetailRow(
+                        EditableDetailRow(
                             icon: "tag.fill",
                             label: "Category",
-                            value: "\(item.category.icon) \(item.category.rawValue)"
+                            value: "\(item.category.icon) \(item.category.rawValue)",
+                            onEdit: { showEditCategory = true }
                         )
 
                         Divider()
@@ -128,6 +133,36 @@ struct FoodItemDetailView: View {
                             value: formatDate(item.dateAdded)
                         )
 
+                        if item.expiryDate != nil {
+                            Divider()
+
+                            EditableDetailRow(
+                                icon: "calendar.badge.clock",
+                                label: "Expiry Date",
+                                value: formatExpiryDate(),
+                                isWarning: item.isExpired || item.isExpiringSoon,
+                                onEdit: { showEditExpiry = true }
+                            )
+                        } else {
+                            Divider()
+
+                            Button {
+                                showEditExpiry = true
+                            } label: {
+                                HStack {
+                                    Label("Add Expiry Date", systemImage: "calendar.badge.plus")
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(Color(hex: "2196F3"))
+
+                                    Spacer()
+
+                                    Image(systemName: "plus.circle.fill")
+                                        .foregroundColor(Color(hex: "2196F3"))
+                                }
+                            }
+                        }
+
                         if !item.notes.isEmpty {
                             Divider()
 
@@ -135,11 +170,11 @@ struct FoodItemDetailView: View {
                                 Label("Notes", systemImage: "note.text")
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundColor(Color(hex: "666666"))
 
                                 Text(item.notes)
                                     .font(.body)
-                                    .foregroundColor(.primary)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                         }
@@ -182,6 +217,15 @@ struct FoodItemDetailView: View {
         } message: {
             Text("This action cannot be undone.")
         }
+        .sheet(isPresented: $showEditLocation) {
+            EditLocationSheet(item: item)
+        }
+        .sheet(isPresented: $showEditCategory) {
+            EditCategorySheet(item: item)
+        }
+        .sheet(isPresented: $showEditExpiry) {
+            EditExpirySheet(item: item)
+        }
     }
 
     private func increaseQuantity() {
@@ -221,6 +265,21 @@ struct FoodItemDetailView: View {
         formatter.timeStyle = .short
         return formatter.string(from: date)
     }
+
+    private func formatExpiryDate() -> String {
+        guard let expiryDate = item.expiryDate else { return "Not set" }
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        let dateStr = formatter.string(from: expiryDate)
+
+        if item.isExpired {
+            let days = abs(item.daysUntilExpiry ?? 0)
+            return "\(dateStr) (Expired \(days)d ago)"
+        } else if let days = item.daysUntilExpiry {
+            return days == 0 ? "\(dateStr) (Today!)" : "\(dateStr) (\(days)d left)"
+        }
+        return dateStr
+    }
 }
 
 struct DetailRow: View {
@@ -233,13 +292,190 @@ struct DetailRow: View {
             Label(label, systemImage: icon)
                 .font(.subheadline)
                 .fontWeight(.semibold)
-                .foregroundStyle(.secondary)
+                .foregroundColor(Color(hex: "666666"))
 
             Spacer()
 
             Text(value)
                 .font(.body)
-                .foregroundColor(.primary)
+                .foregroundColor(Color(hex: "1A1A1A"))
+        }
+    }
+}
+
+struct EditableDetailRow: View {
+    let icon: String
+    let label: String
+    let value: String
+    var isWarning: Bool = false
+    let onEdit: () -> Void
+
+    var body: some View {
+        HStack {
+            Label(label, systemImage: icon)
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "666666"))
+
+            Spacer()
+
+            Text(value)
+                .font(.body)
+                .foregroundColor(isWarning ? Color(hex: "FF9800") : Color(hex: "1A1A1A"))
+                .fontWeight(isWarning ? .bold : .regular)
+
+            Button {
+                onEdit()
+            } label: {
+                Image(systemName: "pencil.circle.fill")
+                    .foregroundColor(Color(hex: "2196F3"))
+                    .font(.title3)
+            }
+        }
+    }
+}
+
+struct EditLocationSheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Query(sort: \StorageLocation.sortOrder) private var storageLocations: [StorageLocation]
+    @Bindable var item: FoodItem
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(storageLocations) { location in
+                    Button {
+                        item.storageLocation = location
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Image(systemName: location.icon)
+                                .foregroundColor(Color(hex: location.colorHex))
+                            Text(location.name)
+                                .foregroundColor(Color(hex: "1A1A1A"))
+                            Spacer()
+                            if item.storageLocation?.id == location.id {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(Color(hex: "4CAF50"))
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Change Location")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct EditCategorySheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Bindable var item: FoodItem
+
+    var body: some View {
+        NavigationStack {
+            List {
+                ForEach(FoodCategory.allCases, id: \.self) { category in
+                    Button {
+                        item.category = category
+                        dismiss()
+                    } label: {
+                        HStack {
+                            Text(category.icon)
+                            Text(category.rawValue)
+                                .foregroundColor(Color(hex: "1A1A1A"))
+                            Spacer()
+                            if item.category == category {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(Color(hex: "4CAF50"))
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Change Category")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct EditExpirySheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Bindable var item: FoodItem
+    @State private var expiryDate: Date
+    @State private var hasExpiry: Bool
+
+    init(item: FoodItem) {
+        self.item = item
+        _expiryDate = State(initialValue: item.expiryDate ?? Date().addingTimeInterval(7 * 24 * 60 * 60))
+        _hasExpiry = State(initialValue: item.expiryDate != nil)
+    }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    Toggle("Set Expiry Date", isOn: $hasExpiry)
+                        .tint(Color(hex: "4CAF50"))
+
+                    if hasExpiry {
+                        DatePicker(
+                            "Expiry Date",
+                            selection: $expiryDate,
+                            in: Date()...,
+                            displayedComponents: .date
+                        )
+                        .tint(Color(hex: "FF9800"))
+
+                        HStack(spacing: 8) {
+                            ForEach([3, 7, 14, 30], id: \.self) { days in
+                                Button {
+                                    expiryDate = Date().addingTimeInterval(Double(days) * 24 * 60 * 60)
+                                } label: {
+                                    Text("\(days)d")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color(hex: "E3F2FD"))
+                                        .foregroundColor(Color(hex: "2196F3"))
+                                        .cornerRadius(8)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            .navigationTitle("Expiry Date")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        item.expiryDate = hasExpiry ? expiryDate : nil
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }

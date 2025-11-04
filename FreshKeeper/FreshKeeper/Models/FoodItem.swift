@@ -43,6 +43,7 @@ final class FoodItem {
     var quantity: Int
     var category: FoodCategory
     var dateAdded: Date
+    var expiryDate: Date?
     @Attribute(.externalStorage) var photoData: Data?
     var notes: String
 
@@ -52,6 +53,7 @@ final class FoodItem {
         name: String,
         quantity: Int,
         category: FoodCategory = .other,
+        expiryDate: Date? = nil,
         photoData: Data? = nil,
         notes: String = ""
     ) {
@@ -61,8 +63,26 @@ final class FoodItem {
         self.storageLocation = nil
         self.category = category
         self.dateAdded = Date()
+        self.expiryDate = expiryDate
         self.photoData = photoData
         self.notes = notes
+    }
+
+    var daysUntilExpiry: Int? {
+        guard let expiryDate = expiryDate else { return nil }
+        let calendar = Calendar.current
+        let days = calendar.dateComponents([.day], from: Date(), to: expiryDate).day
+        return days
+    }
+
+    var isExpired: Bool {
+        guard let days = daysUntilExpiry else { return false }
+        return days < 0
+    }
+
+    var isExpiringSoon: Bool {
+        guard let days = daysUntilExpiry else { return false }
+        return days >= 0 && days <= 3
     }
 }
 

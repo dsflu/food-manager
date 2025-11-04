@@ -20,6 +20,9 @@ struct AddFoodItemView: View {
     @State private var showCamera = false
     @State private var showImagePicker = false
     @State private var showImageOptions = false
+    @State private var hasExpiryDate = false
+    @State private var expiryDate = Date().addingTimeInterval(7 * 24 * 60 * 60) // Default 7 days from now
+    @State private var daysUntilExpiry = 7
 
     var body: some View {
         NavigationStack {
@@ -143,6 +146,81 @@ struct AddFoodItemView: View {
                                 TextField("Add any notes...", text: $notes, axis: .vertical)
                                     .textFieldStyle(CustomTextFieldStyle())
                                     .lineLimit(3...5)
+                            }
+
+                            // Expiry Date Section
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Label("Best Before / Expiry", systemImage: "calendar.badge.clock")
+                                        .font(.system(.subheadline, design: .rounded))
+                                        .fontWeight(.bold)
+                                        .foregroundColor(Color(hex: "1A1A1A"))
+
+                                    Spacer()
+
+                                    Toggle("", isOn: $hasExpiryDate)
+                                        .labelsHidden()
+                                        .tint(Color(hex: "4CAF50"))
+                                }
+
+                                if hasExpiryDate {
+                                    VStack(spacing: 12) {
+                                        // Quick days selector
+                                        HStack(spacing: 8) {
+                                            ForEach([3, 7, 14, 30], id: \.self) { days in
+                                                Button {
+                                                    daysUntilExpiry = days
+                                                    expiryDate = Date().addingTimeInterval(Double(days) * 24 * 60 * 60)
+                                                } label: {
+                                                    Text("\(days)d")
+                                                        .font(.system(.caption, design: .rounded))
+                                                        .fontWeight(.semibold)
+                                                        .foregroundColor(daysUntilExpiry == days ? .white : Color(hex: "1A1A1A"))
+                                                        .padding(.horizontal, 12)
+                                                        .padding(.vertical, 6)
+                                                        .background(daysUntilExpiry == days ? Color(hex: "FF9800") : Color.white)
+                                                        .cornerRadius(8)
+                                                        .overlay(
+                                                            RoundedRectangle(cornerRadius: 8)
+                                                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                                        )
+                                                }
+                                            }
+                                        }
+
+                                        // Custom date picker
+                                        DatePicker(
+                                            "Expiry Date",
+                                            selection: $expiryDate,
+                                            in: Date()...,
+                                            displayedComponents: .date
+                                        )
+                                        .datePickerStyle(.compact)
+                                        .font(.system(.body, design: .rounded))
+                                        .tint(Color(hex: "FF9800"))
+                                        .padding()
+                                        .background(Color.white)
+                                        .cornerRadius(12)
+                                        .onChange(of: expiryDate) { _, newDate in
+                                            let days = Calendar.current.dateComponents([.day], from: Date(), to: newDate).day ?? 0
+                                            daysUntilExpiry = days
+                                        }
+
+                                        // Days count display
+                                        HStack {
+                                            Image(systemName: "clock.fill")
+                                                .foregroundColor(Color(hex: "FF9800"))
+                                            Text("Expires in \(daysUntilExpiry) day\(daysUntilExpiry == 1 ? "" : "s")")
+                                                .font(.system(.caption, design: .rounded))
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(Color(hex: "666666"))
+                                        }
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color(hex: "FFF3E0"))
+                                        .cornerRadius(8)
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal)
@@ -299,6 +377,7 @@ struct AddFoodItemView: View {
             name: name,
             quantity: quantity,
             category: selectedCategory,
+            expiryDate: hasExpiryDate ? expiryDate : nil,
             photoData: imageData,
             notes: notes
         )

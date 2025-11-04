@@ -74,6 +74,22 @@ struct FoodItemCard: View {
                         .fontWeight(.medium)
                         .foregroundColor(Color(hex: "999999"))
                 }
+
+                // Expiry Warning
+                if item.isExpired || item.isExpiringSoon {
+                    HStack(spacing: 4) {
+                        Image(systemName: item.isExpired ? "exclamationmark.triangle.fill" : "clock.fill")
+                            .font(.caption2)
+                        Text(expiryText())
+                            .font(.system(.caption2, design: .rounded))
+                            .fontWeight(.bold)
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(item.isExpired ? Color(hex: "F44336") : Color(hex: "FF9800"))
+                    .cornerRadius(6)
+                }
             }
             .padding(12)
         }
@@ -86,5 +102,15 @@ struct FoodItemCard: View {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    private func expiryText() -> String {
+        if item.isExpired {
+            let days = abs(item.daysUntilExpiry ?? 0)
+            return "Expired \(days)d ago"
+        } else if let days = item.daysUntilExpiry {
+            return days == 0 ? "Expires today" : "Expires in \(days)d"
+        }
+        return ""
     }
 }
