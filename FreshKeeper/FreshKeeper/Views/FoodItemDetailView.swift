@@ -470,6 +470,7 @@ struct EditExpirySheet: View {
                                         .foregroundColor(Color(hex: "2196F3"))
                                         .cornerRadius(8)
                                 }
+                                .buttonStyle(.borderless)
                             }
                         }
                     }
