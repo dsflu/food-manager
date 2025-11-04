@@ -280,7 +280,8 @@ struct AddFoodItemView: View {
     }
 
     private func saveItem() {
-        let imageData = capturedImage?.jpegData(compressionQuality: 0.8)
+        // Compress image more aggressively for better performance
+        let imageData = capturedImage?.jpegData(compressionQuality: 0.5)
 
         let item = FoodItem(
             name: name,
@@ -301,6 +302,8 @@ struct CustomTextFieldStyle: TextFieldStyle {
         configuration
             .padding()
             .background(Color.white)
+            .foregroundColor(.primary)
+            .tint(Color(hex: "4CAF50"))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)

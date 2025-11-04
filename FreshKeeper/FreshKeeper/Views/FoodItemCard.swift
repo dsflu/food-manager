@@ -20,6 +20,7 @@ struct FoodItemCard: View {
                         .aspectRatio(contentMode: .fill)
                         .frame(height: 140)
                         .clipped()
+                        .drawingGroup() // Optimize rendering performance
                 } else {
                     ZStack {
                         LinearGradient(
