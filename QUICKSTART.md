@@ -12,13 +12,18 @@
 
 ## Option 1: Test on iPhone (Full Features)
 
-### 1️⃣ Clone & Open
+### 1️⃣ Clone & Set Up Project
 ```bash
 cd ~/Desktop
 git clone https://github.com/YOUR_USERNAME/food-manager.git
 cd food-manager
-open FreshKeeper/FreshKeeper.xcodeproj
 ```
+
+**⚠️ IMPORTANT**: The Xcode project needs to be set up first.
+
+**Follow the setup guide**: [SETUP_PROJECT.md](SETUP_PROJECT.md) (takes 3 minutes)
+
+After setup completes, return here and continue to step 2️⃣.
 
 ### 2️⃣ Connect iPhone
 - Plug in your iPhone with USB cable
@@ -55,13 +60,18 @@ When app launches:
 
 ## Option 2: Test on Simulator (Faster, No Camera)
 
-### 1️⃣ Clone & Open
+### 1️⃣ Clone & Set Up Project
 ```bash
 cd ~/Desktop
 git clone https://github.com/YOUR_USERNAME/food-manager.git
 cd food-manager
-open FreshKeeper/FreshKeeper.xcodeproj
 ```
+
+**⚠️ IMPORTANT**: The Xcode project needs to be set up first.
+
+**Follow the setup guide**: [SETUP_PROJECT.md](SETUP_PROJECT.md) (takes 3 minutes)
+
+After setup completes, return here and continue to step 2️⃣.
 
 ### 2️⃣ Select Simulator
 In Xcode:
