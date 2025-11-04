@@ -108,18 +108,26 @@ struct ContentView: View {
     }
 
     private var statsSection: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             StatCard(
                 title: "Total Items",
                 value: "\(foodItems.count)",
                 icon: "square.grid.2x2.fill",
                 color: Color(hex: "4CAF50")
             )
+
             StatCard(
-                title: "Total Stock",
-                value: "\(foodItems.reduce(0) { $0 + $1.quantity })",
-                icon: "cube.box.fill",
-                color: Color(hex: "2196F3")
+                title: "Expiring Soon",
+                value: "\(foodItems.filter { $0.isExpiringSoon && !$0.isExpired }.count)",
+                icon: "clock.fill",
+                color: Color(hex: "FF9800")
+            )
+
+            StatCard(
+                title: "Expired",
+                value: "\(foodItems.filter { $0.isExpired }.count)",
+                icon: "exclamationmark.triangle.fill",
+                color: Color(hex: "F44336")
             )
         }
         .padding()
@@ -217,24 +225,36 @@ struct StatCard: View {
     let color: Color
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.system(.caption, design: .rounded))
+        VStack(spacing: 8) {
+            // Icon with colored background
+            ZStack {
+                Circle()
+                    .fill(color.opacity(0.15))
+                    .frame(width: 44, height: 44)
+                Image(systemName: icon)
+                    .font(.title3)
                     .fontWeight(.semibold)
-                    .foregroundColor(Color(hex: "666666"))
-                Text(value)
-                    .font(.system(.title2, design: .rounded))
-                    .fontWeight(.heavy)
-                    .foregroundColor(Color(hex: "1A1A1A"))
+                    .foregroundColor(color)
             }
-            Spacer()
-            Image(systemName: icon)
-                .font(.title2)
+
+            // Value
+            Text(value)
+                .font(.system(.title, design: .rounded))
+                .fontWeight(.heavy)
+                .foregroundColor(Color(hex: "1A1A1A"))
+
+            // Title
+            Text(title)
+                .font(.system(.caption, design: .rounded))
                 .fontWeight(.semibold)
-                .foregroundColor(color)
+                .foregroundColor(Color(hex: "666666"))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding()
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 8)
         .background(Color.white)
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
