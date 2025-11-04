@@ -23,6 +23,7 @@ struct ContentView: View {
     @State private var selectedCategory: FoodCategory?
     @State private var selectedFilter: ItemFilter = .all
     @State private var searchText = ""
+    @State private var showFilters = false
 
     var filteredItems: [FoodItem] {
         var items = foodItems
@@ -74,12 +75,18 @@ struct ContentView: View {
                     // Header Stats
                     statsSection
 
-                    // Location Filter
-                    locationFilterSection
+                    // Filters (shown when toggle is on)
+                    if showFilters {
+                        VStack(spacing: 0) {
+                            // Location Filter
+                            locationFilterSection
 
-                    // Category Filter
-                    if !foodCategories.isEmpty {
-                        categoryFilterSection
+                            // Category Filter
+                            if !foodCategories.isEmpty {
+                                categoryFilterSection
+                            }
+                        }
+                        .transition(.move(edge: .top).combined(with: .opacity))
                     }
 
                     // Food Items Grid
@@ -123,13 +130,34 @@ struct ContentView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showingAddItem = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .symbolRenderingMode(.palette)
-                            .foregroundStyle(.white, Color(hex: "4CAF50"))
+                    HStack(spacing: 12) {
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                showFilters.toggle()
+                            }
+                        } label: {
+                            ZStack {
+                                Image(systemName: showFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                                    .font(.title3)
+                                    .foregroundColor(showFilters ? Color(hex: "2196F3") : Color(hex: "666666"))
+
+                                if hasActiveFilters {
+                                    Circle()
+                                        .fill(Color(hex: "FF5722"))
+                                        .frame(width: 8, height: 8)
+                                        .offset(x: 10, y: -10)
+                                }
+                            }
+                        }
+
+                        Button {
+                            showingAddItem = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(.white, Color(hex: "4CAF50"))
+                        }
                     }
                 }
             }
@@ -225,64 +253,60 @@ struct ContentView: View {
 
     private var categoryFilterSection: some View {
         VStack(spacing: 8) {
-            HStack {
-                Text("Filter by Category")
-                    .font(.system(.caption, design: .rounded))
-                    .fontWeight(.semibold)
-                    .foregroundColor(Color(hex: "666666"))
-                    .padding(.leading, 16)
-
-                Spacer()
-
-                if hasActiveFilters {
-                    Button {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            selectedFilter = .all
-                            selectedLocation = nil
-                            selectedCategory = nil
-                        }
-                    } label: {
-                        HStack(spacing: 4) {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.caption)
-                            Text("Clear Filters")
-                                .font(.system(.caption, design: .rounded))
-                                .fontWeight(.semibold)
-                        }
-                        .foregroundColor(Color(hex: "FF5722"))
-                        .padding(.trailing, 16)
-                    }
-                }
-            }
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(foodCategories) { category in
-                        Button {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                selectedCategory = selectedCategory?.id == category.id ? nil : category
-                            }
-                        } label: {
-                            HStack(spacing: 6) {
-                                Text(category.icon)
-                                    .font(.system(.caption, design: .rounded))
-                                Text(category.name)
-                                    .font(.system(.subheadline, design: .rounded))
-                                    .fontWeight(.semibold)
-                            }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 8)
-                            .background(selectedCategory?.id == category.id ? Color(hex: "2196F3") : Color.white)
-                            .foregroundColor(selectedCategory?.id == category.id ? .white : Color(hex: "1A1A1A"))
-                            .cornerRadius(20)
-                            .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
-                        }
-                    }
-                }
-                .padding(.horizontal)
-            }
+            categoryFilterHeader
+            categoryFilterChips
         }
         .padding(.vertical, 8)
+    }
+
+    private var categoryFilterHeader: some View {
+        HStack {
+            Text("Filter by Category")
+                .font(.system(.caption, design: .rounded))
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "666666"))
+                .padding(.leading, 16)
+
+            Spacer()
+
+            if hasActiveFilters {
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        selectedFilter = .all
+                        selectedLocation = nil
+                        selectedCategory = nil
+                    }
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.caption)
+                        Text("Clear Filters")
+                            .font(.system(.caption, design: .rounded))
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(Color(hex: "FF5722"))
+                    .padding(.trailing, 16)
+                }
+            }
+        }
+    }
+
+    private var categoryFilterChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(foodCategories) { category in
+                    CategoryChip(
+                        category: category,
+                        isSelected: selectedCategory?.id == category.id
+                    ) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            selectedCategory = selectedCategory?.id == category.id ? nil : category
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal)
+        }
     }
 
     private var foodItemsGrid: some View {
@@ -453,6 +477,30 @@ struct FilterChip: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(isSelected ? Color(hex: "4CAF50") : Color.white)
+            .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
+            .cornerRadius(20)
+            .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
+        }
+    }
+}
+
+struct CategoryChip: View {
+    let category: FoodCategory
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 6) {
+                Text(category.icon)
+                    .font(.system(.caption, design: .rounded))
+                Text(category.name)
+                    .font(.system(.subheadline, design: .rounded))
+                    .fontWeight(.semibold)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(isSelected ? Color(hex: "2196F3") : Color.white)
             .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
             .cornerRadius(20)
             .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
