@@ -17,6 +17,8 @@ struct FoodItemDetailView: View {
     @State private var showEditCategory = false
     @State private var showEditExpiry = false
     @State private var showEditName = false
+    @State private var showEditPhoto = false
+    @State private var showCamera = false
 
     var body: some View {
         ScrollView {
@@ -24,32 +26,65 @@ struct FoodItemDetailView: View {
                 // Photo Section
                 if let photoData = item.photoData,
                    let uiImage = UIImage(data: photoData) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                        .frame(height: 300)
-                        .frame(maxWidth: .infinity)
-                        .clipped()
-                        .cornerRadius(20)
-                        .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
-                        .padding(.horizontal)
-                } else {
-                    ZStack {
-                        LinearGradient(
-                            colors: [
-                                Color(hex: "E3F2FD"),
-                                Color(hex: "BBDEFB")
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
+                    ZStack(alignment: .topTrailing) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 300)
+                            .frame(maxWidth: .infinity)
+                            .clipped()
+                            .cornerRadius(20)
+                            .shadow(color: .black.opacity(0.2), radius: 10, x: 0, y: 5)
 
-                        Text(item.category?.icon ?? "📦")
-                            .font(.system(size: 120))
+                        // Edit photo button
+                        Button {
+                            showEditPhoto = true
+                        } label: {
+                            Image(systemName: "camera.fill")
+                                .font(.title3)
+                                .foregroundColor(.white)
+                                .padding(12)
+                                .background(Color.black.opacity(0.6))
+                                .clipShape(Circle())
+                        }
+                        .padding(16)
                     }
-                    .frame(height: 300)
-                    .cornerRadius(20)
-                    .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                    .padding(.horizontal)
+                } else {
+                    Button {
+                        showCamera = true
+                    } label: {
+                        ZStack {
+                            LinearGradient(
+                                colors: [
+                                    Color(hex: "E3F2FD"),
+                                    Color(hex: "BBDEFB")
+                                ],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+
+                            VStack(spacing: 12) {
+                                Text(item.category?.icon ?? "📦")
+                                    .font(.system(size: 100))
+
+                                HStack(spacing: 8) {
+                                    Image(systemName: "camera.fill")
+                                        .font(.title3)
+                                    Text("Add Photo")
+                                        .font(.headline)
+                                }
+                                .foregroundColor(Color(hex: "2196F3"))
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 10)
+                                .background(Color.white)
+                                .cornerRadius(12)
+                            }
+                        }
+                        .frame(height: 300)
+                        .cornerRadius(20)
+                        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+                    }
                     .padding(.horizontal)
                 }
 
@@ -239,6 +274,28 @@ struct FoodItemDetailView: View {
         }
         .sheet(isPresented: $showEditName) {
             EditNameSheet(item: item)
+        }
+        .confirmationDialog(
+            "Edit Photo",
+            isPresented: $showEditPhoto,
+            titleVisibility: .visible
+        ) {
+            Button("Retake Photo") {
+                showCamera = true
+            }
+            Button("Remove Photo", role: .destructive) {
+                item.photoData = nil
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .sheet(isPresented: $showCamera) {
+            CameraView { image in
+                if let jpegData = image.jpegData(compressionQuality: 0.8) {
+                    item.photoData = jpegData
+                }
+                showCamera = false
+            }
+            .ignoresSafeArea()
         }
     }
 
