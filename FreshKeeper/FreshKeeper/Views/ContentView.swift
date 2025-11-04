@@ -77,8 +77,8 @@ struct ContentView: View {
                     // Location Filter
                     locationFilterSection
 
-                    // Category Filter (shown when a stat filter is active)
-                    if selectedFilter != .all || selectedCategory != nil {
+                    // Category Filter
+                    if !foodCategories.isEmpty {
                         categoryFilterSection
                     }
 
