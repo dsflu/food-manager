@@ -7,7 +7,6 @@ import SwiftUI
 
 struct FoodItemCard: View {
     let item: FoodItem
-    @State private var isPressed = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -20,7 +19,6 @@ struct FoodItemCard: View {
                         .aspectRatio(contentMode: .fill)
                         .frame(height: 140)
                         .clipped()
-                        .drawingGroup() // Optimize rendering performance
                 } else {
                     ZStack {
                         LinearGradient(
@@ -76,14 +74,7 @@ struct FoodItemCard: View {
         }
         .background(Color.white)
         .cornerRadius(16)
-        .shadow(color: .black.opacity(isPressed ? 0.15 : 0.08), radius: isPressed ? 8 : 5, x: 0, y: isPressed ? 4 : 2)
-        .scaleEffect(isPressed ? 0.97 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
-        .onLongPressGesture(minimumDuration: 0, maximumDistance: 50) {
-            // On release
-        } onPressingChanged: { pressing in
-            isPressed = pressing
-        }
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
 
     private func timeAgo(from date: Date) -> String {

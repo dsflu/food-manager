@@ -99,9 +99,7 @@ struct ContentView: View {
                     title: "All",
                     isSelected: selectedLocation == nil
                 ) {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedLocation = nil
-                    }
+                    selectedLocation = nil
                 }
 
                 ForEach(StorageLocation.allCases, id: \.self) { location in
@@ -110,9 +108,7 @@ struct ContentView: View {
                         icon: location.icon,
                         isSelected: selectedLocation == location
                     ) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            selectedLocation = selectedLocation == location ? nil : location
-                        }
+                        selectedLocation = selectedLocation == location ? nil : location
                     }
                 }
             }
