@@ -19,6 +19,7 @@ struct FoodItemDetailView: View {
     @State private var showEditName = false
     @State private var showEditPhoto = false
     @State private var showCamera = false
+    @State private var capturedImage: UIImage?
 
     var body: some View {
         ScrollView {
@@ -82,13 +83,15 @@ struct FoodItemDetailView: View {
             Button("Cancel", role: .cancel) {}
         }
         .sheet(isPresented: $showCamera) {
-            CameraView { image in
-                if let jpegData = image.jpegData(compressionQuality: 0.8) {
-                    item.photoData = jpegData
-                }
-                showCamera = false
+            CameraView(image: $capturedImage)
+                .ignoresSafeArea()
+        }
+        .onChange(of: capturedImage) { oldValue, newValue in
+            if let image = newValue,
+               let jpegData = image.jpegData(compressionQuality: 0.8) {
+                item.photoData = jpegData
+                capturedImage = nil
             }
-            .ignoresSafeArea()
         }
     }
 
