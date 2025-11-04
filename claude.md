@@ -8,8 +8,8 @@
 - **Language**: Swift
 - **Framework**: SwiftUI
 - **Data Persistence**: SwiftData
-- **Minimum iOS Version**: 17.0
-- **Target Device**: iPhone 16 (works on all iOS 17+ devices)
+- **Minimum iOS Version**: 26.0
+- **Target Device**: iPhone 16 (works on all iOS 26.0+ devices)
 - **Architecture**: MVVM pattern with SwiftUI
 
 ## User Requirements
@@ -160,7 +160,7 @@ Required permissions in `Info.plist`:
 
 ## Data Persistence
 
-- Uses SwiftData (iOS 17+)
+- Uses SwiftData (iOS 26.0+)
 - ModelContainer configured in `FreshKeeperApp`
 - Automatic persistence - no manual save needed
 - Photos stored with `.externalStorage` for optimization
@@ -172,7 +172,7 @@ Required permissions in `Info.plist`:
 - macOS 14.0 (Sonoma) or later
 - Xcode 15.0 or later
 - Free Apple ID (no paid developer account needed)
-- iOS 17.0+ device or simulator
+- iOS 26.0+ device or simulator
 
 ### Quick Start
 ```bash
@@ -289,7 +289,7 @@ Detailed explanation of changes:
 2. **User has 2 freezers** - Must support Freezer 1 and Freezer 2
 3. **Auto-delete at 0 is required** - Don't skip this feature
 4. **Photos are essential** - Camera integration is core feature
-5. **iPhone 16 is target** - But should work on all iOS 17+ devices
+5. **iPhone 16 is target** - But should work on all iOS 26.0+ devices
 6. **No cloud/backend** - Local storage only for simplicity
 7. **Cute and modern** - Use gradients, animations, emojis
 
@@ -318,6 +318,6 @@ xcodebuild clean -project FreshKeeper.xcodeproj -scheme FreshKeeper
 ---
 
 **Last Updated**: 2025-11-04
-**iOS Target**: 17.0+
+**iOS Target**: 26.0+
 **Xcode Version**: 15.0+
 **Swift Version**: 5.0

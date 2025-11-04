@@ -2,7 +2,7 @@
 
 A beautiful iOS app for managing food inventory in your fridge and freezers. Never forget what's in stock again!
 
-![iOS](https://img.shields.io/badge/iOS-17.0+-blue.svg)
+![iOS](https://img.shields.io/badge/iOS-26.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-✓-green.svg)
 ![SwiftData](https://img.shields.io/badge/SwiftData-✓-green.svg)
@@ -23,7 +23,7 @@ A beautiful iOS app for managing food inventory in your fridge and freezers. Nev
 ### Prerequisites
 - Mac with macOS 14.0+
 - Xcode 15.0+ (free from App Store)
-- iPhone with iOS 17.0+ OR use simulator
+- iPhone with iOS 26.0+ OR use simulator
 - Apple ID (free, no paid developer account needed)
 
 ### Installation
@@ -94,7 +94,7 @@ FreshKeeper/
 - **Language**: Swift 5.0
 - **UI Framework**: SwiftUI
 - **Data Persistence**: SwiftData
-- **Minimum iOS**: 17.0
+- **Minimum iOS**: 26.0
 - **Architecture**: MVVM pattern
 
 ## 📚 Documentation
