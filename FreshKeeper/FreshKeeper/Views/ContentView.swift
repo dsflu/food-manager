@@ -6,27 +6,57 @@
 import SwiftUI
 import SwiftData
 
+enum ItemFilter {
+    case all
+    case expiringSoon
+    case expired
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \FoodItem.dateAdded, order: .reverse) private var foodItems: [FoodItem]
     @Query(sort: \StorageLocation.sortOrder) private var storageLocations: [StorageLocation]
+    @Query(sort: \FoodCategory.sortOrder) private var foodCategories: [FoodCategory]
     @State private var showingAddItem = false
     @State private var showingManageStorage = false
     @State private var selectedLocation: StorageLocation?
+    @State private var selectedCategory: FoodCategory?
+    @State private var selectedFilter: ItemFilter = .all
     @State private var searchText = ""
 
     var filteredItems: [FoodItem] {
         var items = foodItems
 
+        // Filter by status (all/expiring/expired)
+        switch selectedFilter {
+        case .all:
+            break // Show all
+        case .expiringSoon:
+            items = items.filter { $0.isExpiringSoon && !$0.isExpired }
+        case .expired:
+            items = items.filter { $0.isExpired }
+        }
+
+        // Filter by storage location
         if let location = selectedLocation {
             items = items.filter { $0.storageLocation?.id == location.id }
         }
 
+        // Filter by category
+        if let category = selectedCategory {
+            items = items.filter { $0.category?.id == category.id }
+        }
+
+        // Filter by search text
         if !searchText.isEmpty {
             items = items.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
 
         return items
+    }
+
+    var hasActiveFilters: Bool {
+        selectedFilter != .all || selectedLocation != nil || selectedCategory != nil
     }
 
     var body: some View {
@@ -46,6 +76,11 @@ struct ContentView: View {
 
                     // Location Filter
                     locationFilterSection
+
+                    // Category Filter (shown when a stat filter is active)
+                    if selectedFilter != .all || selectedCategory != nil {
+                        categoryFilterSection
+                    }
 
                     // Food Items Grid
                     if filteredItems.isEmpty {
@@ -109,26 +144,56 @@ struct ContentView: View {
 
     private var statsSection: some View {
         HStack(spacing: 12) {
-            StatCard(
-                title: "Total Items",
-                value: "\(foodItems.count)",
-                icon: "square.grid.2x2.fill",
-                color: Color(hex: "4CAF50")
-            )
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    selectedFilter = .all
+                    selectedLocation = nil
+                    selectedCategory = nil
+                }
+            } label: {
+                StatCard(
+                    title: "Total Items",
+                    value: "\(foodItems.count)",
+                    icon: "square.grid.2x2.fill",
+                    color: Color(hex: "4CAF50"),
+                    isSelected: selectedFilter == .all
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
 
-            StatCard(
-                title: "Expiring Soon",
-                value: "\(foodItems.filter { $0.isExpiringSoon && !$0.isExpired }.count)",
-                icon: "clock.fill",
-                color: Color(hex: "FF9800")
-            )
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    selectedFilter = selectedFilter == .expiringSoon ? .all : .expiringSoon
+                    selectedLocation = nil
+                    selectedCategory = nil
+                }
+            } label: {
+                StatCard(
+                    title: "Expiring Soon",
+                    value: "\(foodItems.filter { $0.isExpiringSoon && !$0.isExpired }.count)",
+                    icon: "clock.fill",
+                    color: Color(hex: "FF9800"),
+                    isSelected: selectedFilter == .expiringSoon
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
 
-            StatCard(
-                title: "Expired",
-                value: "\(foodItems.filter { $0.isExpired }.count)",
-                icon: "exclamationmark.triangle.fill",
-                color: Color(hex: "F44336")
-            )
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    selectedFilter = selectedFilter == .expired ? .all : .expired
+                    selectedLocation = nil
+                    selectedCategory = nil
+                }
+            } label: {
+                StatCard(
+                    title: "Expired",
+                    value: "\(foodItems.filter { $0.isExpired }.count)",
+                    icon: "exclamationmark.triangle.fill",
+                    color: Color(hex: "F44336"),
+                    isSelected: selectedFilter == .expired
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
         }
         .padding()
     }
@@ -158,6 +223,68 @@ struct ContentView: View {
         .padding(.vertical, 8)
     }
 
+    private var categoryFilterSection: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Text("Filter by Category")
+                    .font(.system(.caption, design: .rounded))
+                    .fontWeight(.semibold)
+                    .foregroundColor(Color(hex: "666666"))
+                    .padding(.leading, 16)
+
+                Spacer()
+
+                if hasActiveFilters {
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            selectedFilter = .all
+                            selectedLocation = nil
+                            selectedCategory = nil
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Image(systemName: "xmark.circle.fill")
+                                .font(.caption)
+                            Text("Clear Filters")
+                                .font(.system(.caption, design: .rounded))
+                                .fontWeight(.semibold)
+                        }
+                        .foregroundColor(Color(hex: "FF5722"))
+                        .padding(.trailing, 16)
+                    }
+                }
+            }
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 12) {
+                    ForEach(foodCategories) { category in
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                selectedCategory = selectedCategory?.id == category.id ? nil : category
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Text(category.icon)
+                                    .font(.system(.caption, design: .rounded))
+                                Text(category.name)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.semibold)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 8)
+                            .background(selectedCategory?.id == category.id ? Color(hex: "2196F3") : Color.white)
+                            .foregroundColor(selectedCategory?.id == category.id ? .white : Color(hex: "1A1A1A"))
+                            .cornerRadius(20)
+                            .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
+        .padding(.vertical, 8)
+    }
+
     private var foodItemsGrid: some View {
         ScrollView {
             LazyVGrid(
@@ -180,39 +307,82 @@ struct ContentView: View {
 
     private var emptyStateView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "refrigerator")
-                .font(.system(size: 80))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color(hex: "4CAF50"), Color(hex: "2196F3")],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+            if hasActiveFilters {
+                // Empty state with filters active
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 80))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color(hex: "4CAF50"), Color(hex: "2196F3")],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
-                .opacity(0.3)
+                    .opacity(0.3)
 
-            Text("Your inventory is empty")
-                .font(.system(.title2, design: .rounded))
-                .fontWeight(.bold)
-                .foregroundColor(Color(hex: "1A1A1A"))
+                Text("No items found")
+                    .font(.system(.title2, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: "1A1A1A"))
 
-            Text("Start by adding your first food item")
-                .font(.system(.body, design: .rounded))
-                .fontWeight(.medium)
-                .foregroundColor(Color(hex: "666666"))
+                Text("Try adjusting your filters")
+                    .font(.system(.body, design: .rounded))
+                    .fontWeight(.medium)
+                    .foregroundColor(Color(hex: "666666"))
 
-            Button {
-                showingAddItem = true
-            } label: {
-                Label("Add Food Item", systemImage: "plus.circle.fill")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Color(hex: "4CAF50"))
-                    .cornerRadius(12)
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        selectedFilter = .all
+                        selectedLocation = nil
+                        selectedCategory = nil
+                        searchText = ""
+                    }
+                } label: {
+                    Label("Clear All Filters", systemImage: "xmark.circle.fill")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color(hex: "2196F3"))
+                        .cornerRadius(12)
+                }
+                .padding(.top)
+            } else {
+                // Empty state without filters
+                Image(systemName: "refrigerator")
+                    .font(.system(size: 80))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color(hex: "4CAF50"), Color(hex: "2196F3")],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .opacity(0.3)
+
+                Text("Your inventory is empty")
+                    .font(.system(.title2, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: "1A1A1A"))
+
+                Text("Start by adding your first food item")
+                    .font(.system(.body, design: .rounded))
+                    .fontWeight(.medium)
+                    .foregroundColor(Color(hex: "666666"))
+
+                Button {
+                    showingAddItem = true
+                } label: {
+                    Label("Add Food Item", systemImage: "plus.circle.fill")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color(hex: "4CAF50"))
+                        .cornerRadius(12)
+                }
+                .padding(.top)
             }
-            .padding(.top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -223,18 +393,19 @@ struct StatCard: View {
     let value: String
     let icon: String
     let color: Color
+    var isSelected: Bool = false
 
     var body: some View {
         VStack(spacing: 8) {
             // Icon with colored background
             ZStack {
                 Circle()
-                    .fill(color.opacity(0.15))
+                    .fill(isSelected ? color : color.opacity(0.15))
                     .frame(width: 44, height: 44)
                 Image(systemName: icon)
                     .font(.title3)
                     .fontWeight(.semibold)
-                    .foregroundColor(color)
+                    .foregroundColor(isSelected ? .white : color)
             }
 
             // Value
@@ -255,9 +426,9 @@ struct StatCard: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 16)
         .padding(.horizontal, 8)
-        .background(Color.white)
+        .background(isSelected ? color.opacity(0.1) : Color.white)
         .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .shadow(color: .black.opacity(isSelected ? 0.1 : 0.05), radius: isSelected ? 8 : 5, x: 0, y: isSelected ? 4 : 2)
     }
 }
 
