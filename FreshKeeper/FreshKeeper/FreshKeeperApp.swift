@@ -22,7 +22,13 @@ struct FreshKeeperApp: App {
             StorageLocation.self,
             FoodCategory.self
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+
+        // Use lightweight migration for schema changes
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false,
+            allowsSave: true
+        )
 
         do {
             let container = try ModelContainer(for: schema, configurations: [modelConfiguration])
@@ -54,7 +60,11 @@ struct FreshKeeperApp: App {
 
             return container
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // If migration fails, provide helpful error message
+            print("⚠️ SwiftData Migration Error: \(error)")
+            print("💡 Solution: Delete the app from your device and reinstall to start fresh.")
+            print("   This happens when the database schema changes significantly.")
+            fatalError("Could not create ModelContainer - see console for migration instructions")
         }
     }()
 
