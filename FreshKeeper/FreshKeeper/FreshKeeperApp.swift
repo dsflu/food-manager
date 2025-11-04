@@ -12,10 +12,8 @@ import SwiftData
 struct FreshKeeperApp: App {
     init() {
         // Configure UI appearance for better visibility
-        // Set darker placeholder color for TextFields (default is too light)
-        if let placeholderColor = UIColor(red: 0.4, green: 0.4, blue: 0.4, alpha: 1.0) as UIColor? {
-            UITextField.appearance().tintColor = UIColor(red: 0.29, green: 0.69, blue: 0.31, alpha: 1.0) // #4CAF50 for cursor
-        }
+        // Set green cursor color for TextFields
+        UITextField.appearance().tintColor = UIColor(red: 0.29, green: 0.69, blue: 0.31, alpha: 1.0) // #4CAF50
     }
 
     var sharedModelContainer: ModelContainer = {

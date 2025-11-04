@@ -44,7 +44,7 @@ struct FoodItemDetailView: View {
                             endPoint: .bottomTrailing
                         )
 
-                        Text(item.category.icon)
+                        Text(item.category?.icon ?? "📦")
                             .font(.system(size: 120))
                     }
                     .frame(height: 300)
