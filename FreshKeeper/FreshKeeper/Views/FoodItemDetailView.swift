@@ -509,11 +509,19 @@ struct EditNameSheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Food name", text: $editedName)
-                        .font(.system(.body, design: .rounded))
-                        .foregroundColor(Color(hex: "1A1A1A"))
+                    ZStack(alignment: .leading) {
+                        if editedName.isEmpty {
+                            Text("Food name")
+                                .font(.system(.body, design: .rounded))
+                                .foregroundColor(Color(hex: "999999"))
+                        }
+                        TextField("", text: $editedName)
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(Color(hex: "1A1A1A"))
+                    }
                 }
             }
+            .scrollDismissesKeyboard(.immediately)
             .navigationTitle("Edit Name")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

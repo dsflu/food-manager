@@ -33,6 +33,9 @@ struct AddFoodItemView: View {
             ZStack {
                 Color(hex: "F8F9FA")
                     .ignoresSafeArea()
+                    .onTapGesture {
+                        hideKeyboard()
+                    }
 
                 ScrollView {
                     VStack(spacing: 24) {
@@ -48,8 +51,19 @@ struct AddFoodItemView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(Color(hex: "1A1A1A"))
 
-                                TextField("e.g., Chicken Breast", text: $name)
-                                    .textFieldStyle(CustomTextFieldStyle())
+                                ZStack(alignment: .leading) {
+                                    // Visible placeholder
+                                    if name.isEmpty {
+                                        Text("e.g., Chicken Breast")
+                                            .font(.system(.body, design: .rounded))
+                                            .fontWeight(.medium)
+                                            .foregroundColor(Color(hex: "999999"))
+                                            .padding(.leading, 16)
+                                    }
+
+                                    TextField("", text: $name)
+                                        .textFieldStyle(CustomTextFieldStyle())
+                                }
                             }
 
                             // Quantity Stepper
@@ -169,9 +183,21 @@ struct AddFoodItemView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(Color(hex: "1A1A1A"))
 
-                                TextField("Add any notes...", text: $notes, axis: .vertical)
-                                    .textFieldStyle(CustomTextFieldStyle())
-                                    .lineLimit(3...5)
+                                ZStack(alignment: .topLeading) {
+                                    // Visible placeholder
+                                    if notes.isEmpty {
+                                        Text("Add any notes...")
+                                            .font(.system(.body, design: .rounded))
+                                            .fontWeight(.medium)
+                                            .foregroundColor(Color(hex: "999999"))
+                                            .padding(.leading, 16)
+                                            .padding(.top, 12)
+                                    }
+
+                                    TextField("", text: $notes, axis: .vertical)
+                                        .textFieldStyle(CustomTextFieldStyle())
+                                        .lineLimit(3...5)
+                                }
                             }
 
                             // Expiry Date Section
@@ -278,6 +304,7 @@ struct AddFoodItemView: View {
                     }
                     .padding(.vertical)
                 }
+                .scrollDismissesKeyboard(.immediately)
             }
             .navigationTitle("Add Food Item")
             .navigationBarTitleDisplayMode(.inline)
@@ -529,9 +556,16 @@ struct AddCustomCategorySheet: View {
         NavigationStack {
             Form {
                 Section {
-                    TextField("Category Name", text: $categoryName)
-                        .font(.system(.body, design: .rounded))
-                        .foregroundColor(Color(hex: "1A1A1A"))
+                    ZStack(alignment: .leading) {
+                        if categoryName.isEmpty {
+                            Text("Category Name")
+                                .font(.system(.body, design: .rounded))
+                                .foregroundColor(Color(hex: "999999"))
+                        }
+                        TextField("", text: $categoryName)
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(Color(hex: "1A1A1A"))
+                    }
                 }
 
                 Section(header: Text("Choose Icon")) {
@@ -564,6 +598,7 @@ struct AddCustomCategorySheet: View {
                     }
                 }
             }
+            .scrollDismissesKeyboard(.immediately)
             .navigationTitle("Add Category")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -581,5 +616,12 @@ struct AddCustomCategorySheet: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Keyboard Dismissal Extension
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }
