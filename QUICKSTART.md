@@ -21,9 +21,9 @@ cd food-manager
 
 **⚠️ IMPORTANT**: The Xcode project needs to be set up first.
 
-**Follow the setup guide**: [SETUP_PROJECT.md](SETUP_PROJECT.md) (takes 3 minutes)
+**Follow the simple setup guide**: [SETUP_SIMPLE.md](SETUP_SIMPLE.md) (takes 5 minutes)
 
-After setup completes, return here and continue to step 2️⃣.
+This creates a fresh Xcode project and adds the source files. After setup completes, return here and continue to step 2️⃣.
 
 ### 2️⃣ Connect iPhone
 - Plug in your iPhone with USB cable
@@ -69,9 +69,9 @@ cd food-manager
 
 **⚠️ IMPORTANT**: The Xcode project needs to be set up first.
 
-**Follow the setup guide**: [SETUP_PROJECT.md](SETUP_PROJECT.md) (takes 3 minutes)
+**Follow the simple setup guide**: [SETUP_SIMPLE.md](SETUP_SIMPLE.md) (takes 5 minutes)
 
-After setup completes, return here and continue to step 2️⃣.
+This creates a fresh Xcode project and adds the source files. After setup completes, return here and continue to step 2️⃣.
 
 ### 2️⃣ Select Simulator
 In Xcode:
