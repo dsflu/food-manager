@@ -37,18 +37,20 @@ struct FoodItemCard: View {
                 }
 
                 // Location Badge
-                HStack(spacing: 4) {
-                    Image(systemName: item.storageLocation.icon)
-                        .font(.caption2)
-                    Text(item.storageLocation.rawValue)
-                        .font(.caption2)
-                        .fontWeight(.semibold)
+                if let location = item.storageLocation {
+                    HStack(spacing: 4) {
+                        Image(systemName: location.icon)
+                            .font(.caption2)
+                        Text(location.name)
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(8)
+                    .padding(8)
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(.ultraThinMaterial)
-                .cornerRadius(8)
-                .padding(8)
             }
 
             // Info Section

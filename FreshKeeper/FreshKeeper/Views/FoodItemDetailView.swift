@@ -109,7 +109,7 @@ struct FoodItemDetailView: View {
                         DetailRow(
                             icon: "mappin.and.ellipse",
                             label: "Storage Location",
-                            value: item.storageLocation.rawValue
+                            value: item.storageLocation?.name ?? "Unknown"
                         )
 
                         Divider()

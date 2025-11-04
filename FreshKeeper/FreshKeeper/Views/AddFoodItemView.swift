@@ -9,10 +9,11 @@ import SwiftData
 struct AddFoodItemView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Query(sort: \StorageLocation.sortOrder) private var storageLocations: [StorageLocation]
 
     @State private var name = ""
     @State private var quantity = 1
-    @State private var selectedLocation: StorageLocation = .fridge
+    @State private var selectedLocation: StorageLocation?
     @State private var selectedCategory: FoodCategory = .other
     @State private var notes = ""
     @State private var capturedImage: UIImage?
@@ -93,14 +94,16 @@ struct AddFoodItemView: View {
                                     .fontWeight(.bold)
                                     .foregroundColor(Color(hex: "1A1A1A"))
 
-                                HStack(spacing: 12) {
-                                    ForEach(StorageLocation.allCases, id: \.self) { location in
-                                        LocationButton(
-                                            location: location,
-                                            isSelected: selectedLocation == location
-                                        ) {
-                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                selectedLocation = location
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 12) {
+                                        ForEach(storageLocations) { location in
+                                            LocationButton(
+                                                location: location,
+                                                isSelected: selectedLocation?.id == location.id
+                                            ) {
+                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                    selectedLocation = location
+                                                }
                                             }
                                         }
                                     }
@@ -201,6 +204,12 @@ struct AddFoodItemView: View {
                 }
                 Button("Cancel", role: .cancel) {}
             }
+            .onAppear {
+                // Set default storage location to first one (Fridge)
+                if selectedLocation == nil && !storageLocations.isEmpty {
+                    selectedLocation = storageLocations.first
+                }
+            }
         }
     }
 
@@ -289,11 +298,13 @@ struct AddFoodItemView: View {
         let item = FoodItem(
             name: name,
             quantity: quantity,
-            storageLocation: selectedLocation,
             category: selectedCategory,
             photoData: imageData,
             notes: notes
         )
+
+        // Set the storage location relationship
+        item.storageLocation = selectedLocation
 
         modelContext.insert(item)
         dismiss()
@@ -329,18 +340,19 @@ struct LocationButton: View {
                     .font(.title2)
                     .fontWeight(.semibold)
 
-                Text(location.rawValue)
+                Text(location.name)
                     .font(.system(.caption, design: .rounded))
                     .fontWeight(.bold)
             }
-            .frame(maxWidth: .infinity)
+            .frame(minWidth: 80)
             .padding(.vertical, 16)
-            .background(isSelected ? Color(hex: "4CAF50") : Color.white)
+            .padding(.horizontal, 12)
+            .background(isSelected ? Color(hex: location.colorHex) : Color.white)
             .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color(hex: "4CAF50") : Color.gray.opacity(0.2), lineWidth: 2)
+                    .stroke(isSelected ? Color(hex: location.colorHex) : Color.gray.opacity(0.2), lineWidth: 2)
             )
         }
     }

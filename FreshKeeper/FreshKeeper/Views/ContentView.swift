@@ -8,8 +8,10 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var foodItems: [FoodItem]
+    @Query(sort: \FoodItem.dateAdded, order: .reverse) private var foodItems: [FoodItem]
+    @Query(sort: \StorageLocation.sortOrder) private var storageLocations: [StorageLocation]
     @State private var showingAddItem = false
+    @State private var showingManageStorage = false
     @State private var selectedLocation: StorageLocation?
     @State private var searchText = ""
 
@@ -17,14 +19,14 @@ struct ContentView: View {
         var items = foodItems
 
         if let location = selectedLocation {
-            items = items.filter { $0.storageLocation == location }
+            items = items.filter { $0.storageLocation?.id == location.id }
         }
 
         if !searchText.isEmpty {
             items = items.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
 
-        return items.sorted { $0.dateAdded > $1.dateAdded }
+        return items
     }
 
     var body: some View {
@@ -57,6 +59,16 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        showingManageStorage = true
+                    } label: {
+                        Image(systemName: "square.grid.3x3.fill")
+                            .font(.title3)
+                            .foregroundColor(Color(hex: "666666"))
+                    }
+                }
+
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         showingAddItem = true
@@ -70,6 +82,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingAddItem) {
                 AddFoodItemView()
+            }
+            .sheet(isPresented: $showingManageStorage) {
+                StorageManagementView()
             }
         }
     }
@@ -102,13 +117,13 @@ struct ContentView: View {
                     selectedLocation = nil
                 }
 
-                ForEach(StorageLocation.allCases, id: \.self) { location in
+                ForEach(storageLocations) { location in
                     FilterChip(
-                        title: location.rawValue,
+                        title: location.name,
                         icon: location.icon,
-                        isSelected: selectedLocation == location
+                        isSelected: selectedLocation?.id == location.id
                     ) {
-                        selectedLocation = selectedLocation == location ? nil : location
+                        selectedLocation = selectedLocation?.id == location.id ? nil : location
                     }
                 }
             }

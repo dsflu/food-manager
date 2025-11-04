@@ -7,20 +7,50 @@ import Foundation
 import SwiftData
 
 @Model
+final class StorageLocation {
+    var id: UUID
+    var name: String
+    var icon: String
+    var colorHex: String
+    var sortOrder: Int
+    var isDefault: Bool
+
+    @Relationship(deleteRule: .cascade, inverse: \FoodItem.storageLocation)
+    var items: [FoodItem]?
+
+    init(name: String, icon: String = "square.grid.2x2", colorHex: String = "4CAF50", sortOrder: Int = 0, isDefault: Bool = false) {
+        self.id = UUID()
+        self.name = name
+        self.icon = icon
+        self.colorHex = colorHex
+        self.sortOrder = sortOrder
+        self.isDefault = isDefault
+    }
+
+    // Default locations
+    static func createDefaults() -> [StorageLocation] {
+        return [
+            StorageLocation(name: "Fridge", icon: "refrigerator", colorHex: "2196F3", sortOrder: 0, isDefault: true),
+            StorageLocation(name: "Freezer", icon: "snowflake", colorHex: "00BCD4", sortOrder: 1, isDefault: true)
+        ]
+    }
+}
+
+@Model
 final class FoodItem {
     var id: UUID
     var name: String
     var quantity: Int
-    var storageLocation: StorageLocation
     var category: FoodCategory
     var dateAdded: Date
     @Attribute(.externalStorage) var photoData: Data?
     var notes: String
 
+    var storageLocation: StorageLocation?
+
     init(
         name: String,
         quantity: Int,
-        storageLocation: StorageLocation,
         category: FoodCategory = .other,
         photoData: Data? = nil,
         notes: String = ""
@@ -28,33 +58,11 @@ final class FoodItem {
         self.id = UUID()
         self.name = name
         self.quantity = quantity
-        self.storageLocation = storageLocation
+        self.storageLocation = nil
         self.category = category
         self.dateAdded = Date()
         self.photoData = photoData
         self.notes = notes
-    }
-}
-
-enum StorageLocation: String, Codable, CaseIterable {
-    case fridge = "Fridge"
-    case freezer1 = "Freezer 1"
-    case freezer2 = "Freezer 2"
-
-    var icon: String {
-        switch self {
-        case .fridge: return "refrigerator"
-        case .freezer1: return "snowflake"
-        case .freezer2: return "snowflake.circle"
-        }
-    }
-
-    var color: String {
-        switch self {
-        case .fridge: return "blue"
-        case .freezer1: return "cyan"
-        case .freezer2: return "teal"
-        }
     }
 }
 
