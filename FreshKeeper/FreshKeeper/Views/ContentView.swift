@@ -57,50 +57,33 @@ struct ContentView: View {
     }
 
     var hasActiveFilters: Bool {
-        selectedFilter != .all || selectedLocation != nil || selectedCategory != nil
+        selectedLocation != nil || selectedCategory != nil
     }
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
+            ScrollView {
+                VStack(spacing: 0) {
                     // Header Stats
                     statsSection
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
 
                     // Location Filter (always visible)
                     locationFilterSection
-                        .listRowInsets(EdgeInsets())
-                        .listRowBackground(Color.clear)
-                        .listRowSeparator(.hidden)
 
                     // Category Filter (collapsible with filter button)
                     if showFilters && !foodCategories.isEmpty {
                         categoryFilterSection
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
 
                     // Food Items Grid
                     if filteredItems.isEmpty {
                         emptyStateView
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
                     } else {
                         foodItemsGridContent
-                            .listRowInsets(EdgeInsets())
-                            .listRowBackground(Color.clear)
-                            .listRowSeparator(.hidden)
                     }
                 }
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
             .background(
                 LinearGradient(
                     colors: [Color(hex: "E8F4F8"), Color(hex: "F8F9FA")],
@@ -109,8 +92,20 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
             )
-            .navigationTitle("FreshKeeper")
-            .navigationBarTitleDisplayMode(.large)
+            .safeAreaInset(edge: .top) {
+                VStack(spacing: 0) {
+                    HStack {
+                        Text("FreshKeeper")
+                            .font(.system(size: 34, weight: .bold, design: .default))
+                            .foregroundColor(Color(hex: "1A1A1A"))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 12)
+                    .background(Color(hex: "E8F4F8"))
+                }
+            }
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
