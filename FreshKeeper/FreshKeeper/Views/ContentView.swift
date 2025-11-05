@@ -62,38 +62,36 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                // Background gradient
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Header Stats
+                    statsSection
+
+                    // Location Filter (always visible)
+                    locationFilterSection
+
+                    // Category Filter (collapsible with filter button)
+                    if showFilters && !foodCategories.isEmpty {
+                        categoryFilterSection
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+
+                    // Food Items Grid
+                    if filteredItems.isEmpty {
+                        emptyStateView
+                    } else {
+                        foodItemsGridContent
+                    }
+                }
+            }
+            .background(
                 LinearGradient(
                     colors: [Color(hex: "E8F4F8"), Color(hex: "F8F9FA")],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
-
-                ScrollView {
-                    VStack(spacing: 0) {
-                        // Header Stats
-                        statsSection
-
-                        // Location Filter (always visible)
-                        locationFilterSection
-
-                        // Category Filter (collapsible with filter button)
-                        if showFilters && !foodCategories.isEmpty {
-                            categoryFilterSection
-                                .transition(.move(edge: .top).combined(with: .opacity))
-                        }
-
-                        // Food Items Grid
-                        if filteredItems.isEmpty {
-                            emptyStateView
-                        } else {
-                            foodItemsGridContent
-                        }
-                    }
-                }
-            }
+            )
             .navigationTitle("FreshKeeper")
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $searchText, prompt: "Search food items...")
