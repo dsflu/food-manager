@@ -94,29 +94,30 @@ struct ContentView: View {
             )
             .navigationTitle("FreshKeeper")
             .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(Color(hex: "E8F4F8"), for: .navigationBar)
-            .toolbarColorScheme(.light, for: .navigationBar)
             .onAppear {
-                // Configure navigation bar appearance for dark text
+                // Configure navigation bar appearance for dark text - REMOVE CONFLICTING MODIFIERS
                 let appearance = UINavigationBarAppearance()
                 appearance.configureWithOpaqueBackground()
                 appearance.backgroundColor = UIColor(red: 0.91, green: 0.96, blue: 0.97, alpha: 1.0) // #E8F4F8
 
-                // Large title (dark text)
+                // Large title (PURE BLACK for maximum visibility)
                 appearance.largeTitleTextAttributes = [
-                    .foregroundColor: UIColor(red: 0.10, green: 0.10, blue: 0.10, alpha: 1.0), // #1A1A1A
+                    .foregroundColor: UIColor.black,
                     .font: UIFont.systemFont(ofSize: 34, weight: .bold)
                 ]
 
-                // Small title (dark text)
+                // Small title (PURE BLACK)
                 appearance.titleTextAttributes = [
-                    .foregroundColor: UIColor(red: 0.10, green: 0.10, blue: 0.10, alpha: 1.0), // #1A1A1A
+                    .foregroundColor: UIColor.black,
                     .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
                 ]
 
-                UINavigationBar.appearance().standardAppearance = appearance
-                UINavigationBar.appearance().scrollEdgeAppearance = appearance
-                UINavigationBar.appearance().compactAppearance = appearance
+                // Apply to ALL navigation bar states
+                let navBar = UINavigationBar.appearance()
+                navBar.standardAppearance = appearance
+                navBar.scrollEdgeAppearance = appearance
+                navBar.compactAppearance = appearance
+                navBar.tintColor = UIColor.black
             }
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
