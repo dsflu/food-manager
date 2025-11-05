@@ -94,29 +94,29 @@ struct ContentView: View {
             )
             .navigationTitle("FreshKeeper")
             .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(Color(hex: "E8F4F8"), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
             .searchable(text: $searchText, prompt: "Search food items...")
-            .task {
-                // Set up navigation bar appearance with BLACK text
+            .onAppear {
+                // Configure navigation bar appearance - BLACK TEXT for both large and small titles
                 let appearance = UINavigationBarAppearance()
                 appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = UIColor(red: 0.91, green: 0.96, blue: 0.97, alpha: 1.0)
+                appearance.backgroundColor = UIColor(red: 0.91, green: 0.96, blue: 0.97, alpha: 1.0) // Light blue
 
-                // LARGE TITLE - BLACK
+                // LARGE TITLE - BLACK TEXT
                 appearance.largeTitleTextAttributes = [
-                    .foregroundColor: UIColor.black
+                    .foregroundColor: UIColor.black,
+                    .font: UIFont.systemFont(ofSize: 34, weight: .bold)
                 ]
 
-                // SMALL TITLE - BLACK
+                // SMALL TITLE - BLACK TEXT
                 appearance.titleTextAttributes = [
-                    .foregroundColor: UIColor.black
+                    .foregroundColor: UIColor.black,
+                    .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
                 ]
 
-                // Apply globally to all navigation bars
+                // Apply to ALL navigation bar states
                 UINavigationBar.appearance().standardAppearance = appearance
-                UINavigationBar.appearance().scrollEdgeAppearance = appearance
                 UINavigationBar.appearance().compactAppearance = appearance
+                UINavigationBar.appearance().scrollEdgeAppearance = appearance
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
