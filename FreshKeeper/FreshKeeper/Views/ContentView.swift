@@ -24,6 +24,7 @@ struct ContentView: View {
     @State private var selectedFilter: ItemFilter = .all
     @State private var searchText = ""
     @State private var showFilters = false
+    @State private var scrollOffset: CGFloat = 0
 
     var filteredItems: [FoodItem] {
         var items = foodItems
@@ -71,9 +72,32 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
 
-                // Content
+                // Content with Custom Header
                 ScrollView {
-                    LazyVStack(spacing: 0, pinnedViews: []) {
+                    VStack(spacing: 0) {
+                        // CUSTOM LARGE TITLE that shrinks when scrolling
+                        GeometryReader { geometry in
+                            let offset = geometry.frame(in: .named("scroll")).minY
+                            let opacity = min(max(1 - (offset / -50), 0), 1)
+                            let scale = min(max(1 - (offset / -200), 0.5), 1)
+
+                            HStack {
+                                Text("FreshKeeper")
+                                    .font(.system(size: 34, weight: .bold, design: .default))
+                                    .foregroundColor(.black)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 8)
+                            .padding(.bottom, 12)
+                            .opacity(opacity)
+                            .scaleEffect(scale, anchor: .leading)
+                            .onChange(of: offset) { oldValue, newValue in
+                                scrollOffset = newValue
+                            }
+                        }
+                        .frame(height: 52)
+
                         // Header Stats
                         statsSection
 
@@ -94,9 +118,10 @@ struct ContentView: View {
                         }
                     }
                 }
+                .coordinateSpace(name: "scroll")
             }
-            .navigationTitle("FreshKeeper")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle(scrollOffset < -30 ? "FreshKeeper" : "")
+            .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
