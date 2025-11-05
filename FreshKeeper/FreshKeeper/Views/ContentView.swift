@@ -93,7 +93,6 @@ struct ContentView: View {
                             foodItemsGridContent
                         }
                     }
-                    .padding(.top, 1)  // Small padding to allow large title to show
                 }
             }
             .navigationTitle("FreshKeeper")
@@ -102,10 +101,13 @@ struct ContentView: View {
             .onAppear {
                 // Configure navigation bar appearance - BLACK TEXT for both large and small titles
                 let appearance = UINavigationBarAppearance()
-                appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = UIColor(red: 0.91, green: 0.96, blue: 0.97, alpha: 1.0) // Light blue
+                appearance.configureWithDefaultBackground()  // Changed from OpaqueBackground
+                appearance.backgroundColor = UIColor(red: 0.91, green: 0.96, blue: 0.97, alpha: 1.0)
 
-                // LARGE TITLE - BLACK TEXT
+                // Shadow to separate from content
+                appearance.shadowColor = .clear
+
+                // LARGE TITLE - BLACK TEXT (CRITICAL!)
                 appearance.largeTitleTextAttributes = [
                     .foregroundColor: UIColor.black,
                     .font: UIFont.systemFont(ofSize: 34, weight: .bold)
@@ -117,10 +119,12 @@ struct ContentView: View {
                     .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
                 ]
 
-                // Apply to ALL navigation bar states
-                UINavigationBar.appearance().standardAppearance = appearance
-                UINavigationBar.appearance().compactAppearance = appearance
-                UINavigationBar.appearance().scrollEdgeAppearance = appearance
+                // Apply to ALL navigation bar states - ORDER MATTERS!
+                let navBarAppearance = UINavigationBar.appearance()
+                navBarAppearance.scrollEdgeAppearance = appearance  // When at top
+                navBarAppearance.standardAppearance = appearance     // When scrolled
+                navBarAppearance.compactAppearance = appearance      // Compact size
+                navBarAppearance.prefersLargeTitles = true          // ENABLE LARGE TITLES!
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
