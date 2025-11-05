@@ -97,7 +97,7 @@ struct ContentView: View {
                     HStack {
                         Text("FreshKeeper")
                             .font(.system(size: 34, weight: .bold, design: .default))
-                            .foregroundColor(Color(hex: "1A1A1A"))
+                            .foregroundStyle(Color(hex: "1A1A1A"))
                         Spacer()
                     }
                     .padding(.horizontal, 20)
@@ -106,6 +106,10 @@ struct ContentView: View {
                     .background(Color(hex: "E8F4F8"))
                 }
             }
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbarBackground(Color(hex: "E8F4F8"), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.light, for: .navigationBar)
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
