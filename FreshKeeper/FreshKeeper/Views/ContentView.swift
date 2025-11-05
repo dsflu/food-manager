@@ -71,29 +71,26 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    // Header Stats
-                    statsSection
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // Header Stats
+                        statsSection
 
-                    // Filters (shown when toggle is on)
-                    if showFilters {
-                        VStack(spacing: 0) {
-                            // Location Filter
-                            locationFilterSection
+                        // Location Filter (always visible)
+                        locationFilterSection
 
-                            // Category Filter
-                            if !foodCategories.isEmpty {
-                                categoryFilterSection
-                            }
+                        // Category Filter (collapsible with filter button)
+                        if showFilters && !foodCategories.isEmpty {
+                            categoryFilterSection
+                                .transition(.move(edge: .top).combined(with: .opacity))
                         }
-                        .transition(.move(edge: .top).combined(with: .opacity))
-                    }
 
-                    // Food Items Grid
-                    if filteredItems.isEmpty {
-                        emptyStateView
-                    } else {
-                        foodItemsGrid
+                        // Food Items Grid
+                        if filteredItems.isEmpty {
+                            emptyStateView
+                        } else {
+                            foodItemsGridContent
+                        }
                     }
                 }
             }
@@ -320,24 +317,22 @@ struct ContentView: View {
         }
     }
 
-    private var foodItemsGrid: some View {
-        ScrollView {
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: 16),
-                    GridItem(.flexible(), spacing: 16)
-                ],
-                spacing: 16
-            ) {
-                ForEach(filteredItems) { item in
-                    NavigationLink(destination: FoodItemDetailView(item: item)) {
-                        FoodItemCard(item: item)
-                    }
-                    .buttonStyle(PlainButtonStyle())
+    private var foodItemsGridContent: some View {
+        LazyVGrid(
+            columns: [
+                GridItem(.flexible(), spacing: 16),
+                GridItem(.flexible(), spacing: 16)
+            ],
+            spacing: 16
+        ) {
+            ForEach(filteredItems) { item in
+                NavigationLink(destination: FoodItemDetailView(item: item)) {
+                    FoodItemCard(item: item)
                 }
+                .buttonStyle(PlainButtonStyle())
             }
-            .padding()
         }
+        .padding()
     }
 
     private var emptyStateView: some View {
