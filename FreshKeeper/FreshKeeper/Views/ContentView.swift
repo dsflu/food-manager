@@ -92,33 +92,24 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
             )
-            .navigationTitle("FreshKeeper")
-            .navigationBarTitleDisplayMode(.large)
-            .onAppear {
-                // Configure navigation bar appearance for dark text - REMOVE CONFLICTING MODIFIERS
-                let appearance = UINavigationBarAppearance()
-                appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = UIColor(red: 0.91, green: 0.96, blue: 0.97, alpha: 1.0) // #E8F4F8
-
-                // Large title (PURE BLACK for maximum visibility)
-                appearance.largeTitleTextAttributes = [
-                    .foregroundColor: UIColor.black,
-                    .font: UIFont.systemFont(ofSize: 34, weight: .bold)
-                ]
-
-                // Small title (PURE BLACK)
-                appearance.titleTextAttributes = [
-                    .foregroundColor: UIColor.black,
-                    .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
-                ]
-
-                // Apply to ALL navigation bar states
-                let navBar = UINavigationBar.appearance()
-                navBar.standardAppearance = appearance
-                navBar.scrollEdgeAppearance = appearance
-                navBar.compactAppearance = appearance
-                navBar.tintColor = UIColor.black
+            .safeAreaInset(edge: .top) {
+                VStack(spacing: 0) {
+                    HStack {
+                        Text("FreshKeeper")
+                            .font(.system(size: 34, weight: .bold, design: .default))
+                            .foregroundColor(.black)  // Explicit black
+                        Spacer()
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .padding(.bottom, 12)
+                    .background(Color(hex: "E8F4F8"))
+                }
             }
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("")
+            .toolbarBackground(Color(hex: "E8F4F8"), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
