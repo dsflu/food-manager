@@ -92,23 +92,9 @@ struct ContentView: View {
                 )
                 .ignoresSafeArea()
             )
-            .safeAreaInset(edge: .top) {
-                VStack(spacing: 0) {
-                    HStack {
-                        Text("FreshKeeper")
-                            .font(.system(size: 34, weight: .bold, design: .default))
-                            .foregroundStyle(Color(hex: "1A1A1A"))
-                        Spacer()
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 12)
-                    .background(Color(hex: "E8F4F8"))
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("FreshKeeper")
+            .navigationBarTitleDisplayMode(.large)
             .toolbarBackground(Color(hex: "E8F4F8"), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
             .toolbarColorScheme(.light, for: .navigationBar)
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
