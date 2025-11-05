@@ -96,6 +96,28 @@ struct ContentView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbarBackground(Color(hex: "E8F4F8"), for: .navigationBar)
             .toolbarColorScheme(.light, for: .navigationBar)
+            .onAppear {
+                // Configure navigation bar appearance for dark text
+                let appearance = UINavigationBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = UIColor(red: 0.91, green: 0.96, blue: 0.97, alpha: 1.0) // #E8F4F8
+
+                // Large title (dark text)
+                appearance.largeTitleTextAttributes = [
+                    .foregroundColor: UIColor(red: 0.10, green: 0.10, blue: 0.10, alpha: 1.0), // #1A1A1A
+                    .font: UIFont.systemFont(ofSize: 34, weight: .bold)
+                ]
+
+                // Small title (dark text)
+                appearance.titleTextAttributes = [
+                    .foregroundColor: UIColor(red: 0.10, green: 0.10, blue: 0.10, alpha: 1.0), // #1A1A1A
+                    .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
+                ]
+
+                UINavigationBar.appearance().standardAppearance = appearance
+                UINavigationBar.appearance().scrollEdgeAppearance = appearance
+                UINavigationBar.appearance().compactAppearance = appearance
+            }
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
