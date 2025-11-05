@@ -4,7 +4,7 @@
 
 ![FreshKeeper App Screenshot](screenshots/app_screenshot.png)
 
-![iOS](https://img.shields.io/badge/iOS-17.0+-blue.svg)
+![iOS](https://img.shields.io/badge/iOS-26.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-✓-green.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
@@ -33,7 +33,7 @@ All data stays on your device - no cloud, no tracking
 
 ### Prerequisites
 - macOS 14.0+ with [Xcode 15.0+](https://apps.apple.com/app/xcode/id497799835)
-- iPhone with iOS 17.0+ or Simulator
+- iPhone with iOS 26.0+ or Simulator
 - Free Apple ID (no paid developer account needed)
 
 ### Installation
@@ -78,7 +78,7 @@ open FreshKeeper/FreshKeeper.xcodeproj
 
 - **SwiftUI** - Modern declarative UI
 - **SwiftData** - Efficient local persistence
-- **iOS 17+** - Latest Apple technologies
+- **iOS 26+** - Latest Apple technologies
 - **100% Swift** - Type-safe and performant
 
 ## 🧪 Testing Checklist
