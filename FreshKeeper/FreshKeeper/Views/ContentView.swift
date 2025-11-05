@@ -203,6 +203,8 @@ struct ContentView: View {
             .buttonStyle(PlainButtonStyle())
         }
         .padding()
+        .contentShape(Rectangle())
+        .zIndex(1)
     }
 
     private var locationFilterSection: some View {
@@ -228,6 +230,9 @@ struct ContentView: View {
             .padding(.horizontal)
         }
         .padding(.vertical, 8)
+        .background(Color(hex: "F8F9FA"))
+        .contentShape(Rectangle())
+        .zIndex(1)
     }
 
     private var categoryFilterSection: some View {
@@ -236,6 +241,9 @@ struct ContentView: View {
             categoryFilterChips
         }
         .padding(.vertical, 8)
+        .background(Color(hex: "F8F9FA"))
+        .contentShape(Rectangle())
+        .zIndex(1)
     }
 
     private var categoryFilterHeader: some View {
