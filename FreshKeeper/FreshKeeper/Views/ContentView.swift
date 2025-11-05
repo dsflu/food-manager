@@ -75,11 +75,13 @@ struct ContentView: View {
                 // Content with Custom Header
                 ScrollView {
                     VStack(spacing: 0) {
-                        // CUSTOM LARGE TITLE that shrinks when scrolling
+                        // CUSTOM LARGE TITLE that shrinks SLOWLY when scrolling
                         GeometryReader { geometry in
                             let offset = geometry.frame(in: .named("scroll")).minY
-                            let opacity = min(max(1 - (offset / -50), 0), 1)
-                            let scale = min(max(1 - (offset / -200), 0.5), 1)
+                            // Slower fade - over 100 points instead of 50
+                            let opacity = min(max(1 - (offset / -100), 0), 1)
+                            // Slower scale - over 150 points, scales to 0.6 (more visible)
+                            let scale = min(max(1 - (offset / -150) * 0.4, 0.6), 1)
 
                             HStack {
                                 Text("FreshKeeper")
@@ -92,6 +94,7 @@ struct ContentView: View {
                             .padding(.bottom, 12)
                             .opacity(opacity)
                             .scaleEffect(scale, anchor: .leading)
+                            .animation(.easeOut(duration: 0.2), value: offset)
                             .onChange(of: offset) { oldValue, newValue in
                                 scrollOffset = newValue
                             }
@@ -120,7 +123,7 @@ struct ContentView: View {
                 }
                 .coordinateSpace(name: "scroll")
             }
-            .navigationTitle(scrollOffset < -30 ? "FreshKeeper" : "")
+            .navigationTitle(scrollOffset < -80 ? "FreshKeeper" : "")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
