@@ -73,7 +73,7 @@ struct ContentView: View {
 
                 // Content
                 ScrollView {
-                    VStack(spacing: 0) {
+                    LazyVStack(spacing: 0, pinnedViews: []) {
                         // Header Stats
                         statsSection
 
@@ -93,6 +93,7 @@ struct ContentView: View {
                             foodItemsGridContent
                         }
                     }
+                    .padding(.top, 1)  // Small padding to allow large title to show
                 }
             }
             .navigationTitle("FreshKeeper")
