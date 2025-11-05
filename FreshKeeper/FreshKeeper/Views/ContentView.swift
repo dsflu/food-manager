@@ -24,6 +24,8 @@ struct ContentView: View {
     @State private var selectedFilter: ItemFilter = .all
     @State private var searchText = ""
     @State private var showFilters = false
+    @State private var scrollOffset: CGFloat = 0
+    @State private var showSmallTitle = false
 
     var filteredItems: [FoodItem] {
         var items = foodItems
@@ -62,63 +64,81 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 0) {
-                    // Header Stats
-                    statsSection
-
-                    // Location Filter (always visible)
-                    locationFilterSection
-
-                    // Category Filter (collapsible with filter button)
-                    if showFilters && !foodCategories.isEmpty {
-                        categoryFilterSection
-                            .transition(.move(edge: .top).combined(with: .opacity))
-                    }
-
-                    // Food Items Grid
-                    if filteredItems.isEmpty {
-                        emptyStateView
-                    } else {
-                        foodItemsGridContent
-                    }
-                }
-            }
-            .background(
+            ZStack {
+                // Background
                 LinearGradient(
                     colors: [Color(hex: "E8F4F8"), Color(hex: "F8F9FA")],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
-            )
-            .navigationTitle("FreshKeeper")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbarBackground(Color(hex: "E8F4F8"), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .searchable(text: $searchText, prompt: "Search food items...")
-            .task {
-                // Set up navigation bar appearance with BLACK text
-                let appearance = UINavigationBarAppearance()
-                appearance.configureWithOpaqueBackground()
-                appearance.backgroundColor = UIColor(red: 0.91, green: 0.96, blue: 0.97, alpha: 1.0)
 
-                // LARGE TITLE - BLACK
-                appearance.largeTitleTextAttributes = [
-                    .foregroundColor: UIColor.black
-                ]
+                // Content with Custom Header
+                ScrollView {
+                    VStack(spacing: 0) {
+                        // CUSTOM LARGE TITLE that shrinks SLOWLY when scrolling
+                        GeometryReader { geometry in
+                            let offset = geometry.frame(in: .named("scroll")).minY
+                            // Slower fade - over 100 points instead of 50
+                            let opacity = min(max(1 - (offset / -100), 0), 1)
+                            // Slower scale - over 150 points, scales to 0.6 (more visible)
+                            let scale = min(max(1 - (offset / -150) * 0.4, 0.6), 1)
 
-                // SMALL TITLE - BLACK
-                appearance.titleTextAttributes = [
-                    .foregroundColor: UIColor.black
-                ]
+                            HStack {
+                                Text("FreshKeeper")
+                                    .font(.system(size: 34, weight: .bold, design: .default))
+                                    .foregroundColor(.black)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 20)
+                            .padding(.top, 8)
+                            .padding(.bottom, 12)
+                            .opacity(opacity)
+                            .scaleEffect(scale, anchor: .leading)
+                            .animation(.easeOut(duration: 0.2), value: offset)
+                            .onChange(of: offset) { oldValue, newValue in
+                                scrollOffset = newValue
+                                // Smoothly show/hide small title with animation - appears earlier at -40
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    showSmallTitle = newValue < -40
+                                }
+                            }
+                        }
+                        .frame(height: 52)
 
-                // Apply globally to all navigation bars
-                UINavigationBar.appearance().standardAppearance = appearance
-                UINavigationBar.appearance().scrollEdgeAppearance = appearance
-                UINavigationBar.appearance().compactAppearance = appearance
+                        // Header Stats
+                        statsSection
+
+                        // Location Filter (always visible)
+                        locationFilterSection
+
+                        // Category Filter (collapsible with filter button)
+                        if showFilters && !foodCategories.isEmpty {
+                            categoryFilterSection
+                                .transition(.move(edge: .top).combined(with: .opacity))
+                        }
+
+                        // Food Items Grid
+                        if filteredItems.isEmpty {
+                            emptyStateView
+                        } else {
+                            foodItemsGridContent
+                        }
+                    }
+                }
+                .coordinateSpace(name: "scroll")
             }
+            .navigationBarTitleDisplayMode(.inline)
+            .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("FreshKeeper")
+                        .font(.system(size: 17, weight: .semibold, design: .default))
+                        .foregroundColor(.black)
+                        .opacity(showSmallTitle ? 1 : 0)
+                        .animation(.easeInOut(duration: 0.3), value: showSmallTitle)
+                }
+
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         showingManageStorage = true
