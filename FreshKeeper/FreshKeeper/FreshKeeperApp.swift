@@ -14,6 +14,28 @@ struct FreshKeeperApp: App {
         // Configure UI appearance for better visibility
         // Set green cursor color for TextFields
         UITextField.appearance().tintColor = UIColor(red: 0.29, green: 0.69, blue: 0.31, alpha: 1.0) // #4CAF50
+
+        // Configure navigation bar with BLACK text for large and small titles
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = UIColor(red: 0.91, green: 0.96, blue: 0.97, alpha: 1.0) // #E8F4F8
+
+        // LARGE TITLE - BLACK TEXT
+        appearance.largeTitleTextAttributes = [
+            .foregroundColor: UIColor.black,
+            .font: UIFont.systemFont(ofSize: 34, weight: .bold)
+        ]
+
+        // SMALL TITLE - BLACK TEXT
+        appearance.titleTextAttributes = [
+            .foregroundColor: UIColor.black,
+            .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
+        ]
+
+        // Apply to all navigation bars in the app
+        UINavigationBar.appearance().standardAppearance = appearance
+        UINavigationBar.appearance().scrollEdgeAppearance = appearance
+        UINavigationBar.appearance().compactAppearance = appearance
     }
 
     var sharedModelContainer: ModelContainer = {
