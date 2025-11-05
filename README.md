@@ -9,6 +9,10 @@ Never forget what's in your fridge again! Track food items, manage quantities, s
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-✓-green.svg)
 ![SwiftData](https://img.shields.io/badge/SwiftData-✓-green.svg)
 
+## 📱 Screenshot
+
+![FreshKeeper App Screenshot](screenshots/app_screenshot.png)
+
 ---
 
 ## ✨ Key Features
