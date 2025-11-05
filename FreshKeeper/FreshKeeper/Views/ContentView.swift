@@ -62,28 +62,45 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 0) {
+            List {
+                Section {
                     // Header Stats
                     statsSection
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
 
                     // Location Filter (always visible)
                     locationFilterSection
+                        .listRowInsets(EdgeInsets())
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
 
                     // Category Filter (collapsible with filter button)
                     if showFilters && !foodCategories.isEmpty {
                         categoryFilterSection
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                             .transition(.move(edge: .top).combined(with: .opacity))
                     }
 
                     // Food Items Grid
                     if filteredItems.isEmpty {
                         emptyStateView
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     } else {
                         foodItemsGridContent
+                            .listRowInsets(EdgeInsets())
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
             .background(
                 LinearGradient(
                     colors: [Color(hex: "E8F4F8"), Color(hex: "F8F9FA")],
@@ -294,6 +311,7 @@ struct ContentView: View {
                         .cornerRadius(20)
                         .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
                     }
+                    .buttonStyle(.borderless)
                 }
             }
             .padding(.horizontal)
