@@ -25,6 +25,7 @@ struct ContentView: View {
     @State private var searchText = ""
     @State private var showFilters = false
     @State private var scrollOffset: CGFloat = 0
+    @State private var showSmallTitle = false
 
     var filteredItems: [FoodItem] {
         var items = foodItems
@@ -97,6 +98,10 @@ struct ContentView: View {
                             .animation(.easeOut(duration: 0.2), value: offset)
                             .onChange(of: offset) { oldValue, newValue in
                                 scrollOffset = newValue
+                                // Smoothly show/hide small title with animation
+                                withAnimation(.easeInOut(duration: 0.3)) {
+                                    showSmallTitle = newValue < -80
+                                }
                             }
                         }
                         .frame(height: 52)
@@ -123,7 +128,7 @@ struct ContentView: View {
                 }
                 .coordinateSpace(name: "scroll")
             }
-            .navigationTitle(scrollOffset < -80 ? "FreshKeeper" : "")
+            .navigationTitle(showSmallTitle ? "FreshKeeper" : "")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
