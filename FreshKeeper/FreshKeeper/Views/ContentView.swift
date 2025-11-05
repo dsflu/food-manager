@@ -98,9 +98,9 @@ struct ContentView: View {
                             .animation(.easeOut(duration: 0.2), value: offset)
                             .onChange(of: offset) { oldValue, newValue in
                                 scrollOffset = newValue
-                                // Smoothly show/hide small title with animation
-                                withAnimation(.easeInOut(duration: 0.3)) {
-                                    showSmallTitle = newValue < -80
+                                // Smoothly show/hide small title with animation - appears earlier at -40
+                                withAnimation(.easeInOut(duration: 0.25)) {
+                                    showSmallTitle = newValue < -40
                                 }
                             }
                         }
@@ -128,10 +128,17 @@ struct ContentView: View {
                 }
                 .coordinateSpace(name: "scroll")
             }
-            .navigationTitle(showSmallTitle ? "FreshKeeper" : "")
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Search food items...")
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text("FreshKeeper")
+                        .font(.system(size: 17, weight: .semibold, design: .default))
+                        .foregroundColor(.black)
+                        .opacity(showSmallTitle ? 1 : 0)
+                        .animation(.easeInOut(duration: 0.3), value: showSmallTitle)
+                }
+
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         showingManageStorage = true
