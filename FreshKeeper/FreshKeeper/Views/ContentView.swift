@@ -112,9 +112,6 @@ struct ContentView: View {
             .navigationTitle("FreshKeeper")
             .navigationBarTitleDisplayMode(.large)
             .searchable(text: $searchText, prompt: "Search food items...")
-            .toolbarBackground(Color(hex: "E8F4F8"), for: .navigationBar)
-            .toolbarBackground(.visible, for: .navigationBar)
-            .toolbarColorScheme(.light, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button {
