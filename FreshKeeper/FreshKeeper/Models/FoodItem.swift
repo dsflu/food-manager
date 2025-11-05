@@ -7,77 +7,114 @@ import Foundation
 import SwiftData
 
 @Model
+final class StorageLocation {
+    var id: UUID
+    var name: String
+    var icon: String
+    var colorHex: String
+    var sortOrder: Int
+    var isDefault: Bool
+
+    @Relationship(deleteRule: .cascade, inverse: \FoodItem.storageLocation)
+    var items: [FoodItem]?
+
+    init(name: String, icon: String = "square.grid.2x2", colorHex: String = "4CAF50", sortOrder: Int = 0, isDefault: Bool = false) {
+        self.id = UUID()
+        self.name = name
+        self.icon = icon
+        self.colorHex = colorHex
+        self.sortOrder = sortOrder
+        self.isDefault = isDefault
+    }
+
+    // Default locations
+    static func createDefaults() -> [StorageLocation] {
+        return [
+            StorageLocation(name: "Fridge", icon: "refrigerator", colorHex: "2196F3", sortOrder: 0, isDefault: true),
+            StorageLocation(name: "Freezer", icon: "snowflake", colorHex: "00BCD4", sortOrder: 1, isDefault: true)
+        ]
+    }
+}
+
+@Model
+final class FoodCategory {
+    var id: UUID
+    var name: String
+    var icon: String
+    var sortOrder: Int
+    var isDefault: Bool
+
+    @Relationship(deleteRule: .nullify, inverse: \FoodItem.category)
+    var items: [FoodItem]?
+
+    init(name: String, icon: String = "📦", sortOrder: Int = 0, isDefault: Bool = false) {
+        self.id = UUID()
+        self.name = name
+        self.icon = icon
+        self.sortOrder = sortOrder
+        self.isDefault = isDefault
+    }
+
+    // Default categories
+    static func createDefaults() -> [FoodCategory] {
+        return [
+            FoodCategory(name: "Meat", icon: "🥩", sortOrder: 0, isDefault: true),
+            FoodCategory(name: "Vegetables", icon: "🥬", sortOrder: 1, isDefault: true),
+            FoodCategory(name: "Fruits", icon: "🍎", sortOrder: 2, isDefault: true),
+            FoodCategory(name: "Dairy", icon: "🥛", sortOrder: 3, isDefault: true),
+            FoodCategory(name: "Bread", icon: "🍞", sortOrder: 4, isDefault: true),
+            FoodCategory(name: "Beverages", icon: "🧃", sortOrder: 5, isDefault: true),
+            FoodCategory(name: "Prepared Meals", icon: "🍱", sortOrder: 6, isDefault: true),
+            FoodCategory(name: "Other", icon: "📦", sortOrder: 7, isDefault: true)
+        ]
+    }
+}
+
+@Model
 final class FoodItem {
     var id: UUID
     var name: String
     var quantity: Int
-    var storageLocation: StorageLocation
-    var category: FoodCategory
     var dateAdded: Date
+    var expiryDate: Date?
     @Attribute(.externalStorage) var photoData: Data?
     var notes: String
+
+    var storageLocation: StorageLocation?
+    var category: FoodCategory?
 
     init(
         name: String,
         quantity: Int,
-        storageLocation: StorageLocation,
-        category: FoodCategory = .other,
+        expiryDate: Date? = nil,
         photoData: Data? = nil,
         notes: String = ""
     ) {
         self.id = UUID()
         self.name = name
         self.quantity = quantity
-        self.storageLocation = storageLocation
-        self.category = category
+        self.storageLocation = nil
+        self.category = nil
         self.dateAdded = Date()
+        self.expiryDate = expiryDate
         self.photoData = photoData
         self.notes = notes
     }
-}
 
-enum StorageLocation: String, Codable, CaseIterable {
-    case fridge = "Fridge"
-    case freezer1 = "Freezer 1"
-    case freezer2 = "Freezer 2"
-
-    var icon: String {
-        switch self {
-        case .fridge: return "refrigerator"
-        case .freezer1: return "snowflake"
-        case .freezer2: return "snowflake.circle"
-        }
+    var daysUntilExpiry: Int? {
+        guard let expiryDate = expiryDate else { return nil }
+        let calendar = Calendar.current
+        let days = calendar.dateComponents([.day], from: Date(), to: expiryDate).day
+        return days
     }
 
-    var color: String {
-        switch self {
-        case .fridge: return "blue"
-        case .freezer1: return "cyan"
-        case .freezer2: return "teal"
-        }
+    var isExpired: Bool {
+        guard let days = daysUntilExpiry else { return false }
+        return days < 0
     }
-}
 
-enum FoodCategory: String, Codable, CaseIterable {
-    case meat = "Meat"
-    case bread = "Bread"
-    case vegetables = "Vegetables"
-    case fruits = "Fruits"
-    case dairy = "Dairy"
-    case beverages = "Beverages"
-    case prepared = "Prepared Meals"
-    case other = "Other"
-
-    var icon: String {
-        switch self {
-        case .meat: return "🥩"
-        case .bread: return "🍞"
-        case .vegetables: return "🥬"
-        case .fruits: return "🍎"
-        case .dairy: return "🥛"
-        case .beverages: return "🧃"
-        case .prepared: return "🍱"
-        case .other: return "📦"
-        }
+    var isExpiringSoon: Bool {
+        guard let days = daysUntilExpiry else { return false }
+        return days >= 0 && days <= 3
     }
 }

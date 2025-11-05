@@ -14,7 +14,8 @@ struct CameraView: UIViewControllerRepresentable {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
         picker.sourceType = .camera
-        picker.allowsEditing = true
+        picker.allowsEditing = false
+        picker.cameraCaptureMode = .photo
         return picker
     }
 
@@ -35,9 +36,7 @@ struct CameraView: UIViewControllerRepresentable {
             _ picker: UIImagePickerController,
             didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
         ) {
-            if let editedImage = info[.editedImage] as? UIImage {
-                parent.image = editedImage
-            } else if let originalImage = info[.originalImage] as? UIImage {
+            if let originalImage = info[.originalImage] as? UIImage {
                 parent.image = originalImage
             }
             parent.dismiss()
@@ -57,7 +56,7 @@ struct ImagePicker: UIViewControllerRepresentable {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
         picker.sourceType = .photoLibrary
-        picker.allowsEditing = true
+        picker.allowsEditing = false
         return picker
     }
 
@@ -78,9 +77,7 @@ struct ImagePicker: UIViewControllerRepresentable {
             _ picker: UIImagePickerController,
             didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]
         ) {
-            if let editedImage = info[.editedImage] as? UIImage {
-                parent.image = editedImage
-            } else if let originalImage = info[.originalImage] as? UIImage {
+            if let originalImage = info[.originalImage] as? UIImage {
                 parent.image = originalImage
             }
             parent.dismiss()

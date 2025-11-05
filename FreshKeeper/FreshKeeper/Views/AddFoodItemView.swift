@@ -9,22 +9,33 @@ import SwiftData
 struct AddFoodItemView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Query(sort: \StorageLocation.sortOrder) private var storageLocations: [StorageLocation]
+    @Query(sort: \FoodCategory.sortOrder) private var foodCategories: [FoodCategory]
 
     @State private var name = ""
     @State private var quantity = 1
-    @State private var selectedLocation: StorageLocation = .fridge
-    @State private var selectedCategory: FoodCategory = .other
+    @State private var selectedLocation: StorageLocation?
+    @State private var selectedCategory: FoodCategory?
     @State private var notes = ""
     @State private var capturedImage: UIImage?
     @State private var showCamera = false
     @State private var showImagePicker = false
     @State private var showImageOptions = false
+    @State private var hasExpiryDate = false
+    @State private var expiryDate = Date().addingTimeInterval(7 * 24 * 60 * 60) // Default 7 days from now
+    @State private var daysUntilExpiry = 7
+    @State private var showAddCategory = false
+    @State private var customCategoryName = ""
+    @State private var customCategoryIcon = "📦"
 
     var body: some View {
         NavigationStack {
             ZStack {
                 Color(hex: "F8F9FA")
                     .ignoresSafeArea()
+                    .onTapGesture {
+                        hideKeyboard()
+                    }
 
                 ScrollView {
                     VStack(spacing: 24) {
@@ -36,20 +47,31 @@ struct AddFoodItemView: View {
                             // Name Field
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Food Name", systemImage: "text.cursor")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
 
-                                TextField("e.g., Chicken Breast", text: $name)
-                                    .textFieldStyle(CustomTextFieldStyle())
+                                ZStack(alignment: .leading) {
+                                    // Visible placeholder
+                                    if name.isEmpty {
+                                        Text("e.g., Chicken Breast")
+                                            .font(.system(.body, design: .rounded))
+                                            .fontWeight(.medium)
+                                            .foregroundColor(Color(hex: "999999"))
+                                            .padding(.leading, 16)
+                                    }
+
+                                    TextField("", text: $name)
+                                        .textFieldStyle(CustomTextFieldStyle())
+                                }
                             }
 
                             // Quantity Stepper
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Quantity", systemImage: "cube.box.fill")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
 
                                 HStack {
                                     Button {
@@ -59,15 +81,16 @@ struct AddFoodItemView: View {
                                     } label: {
                                         Image(systemName: "minus.circle.fill")
                                             .font(.title2)
-                                            .foregroundColor(quantity > 1 ? Color(hex: "FF5722") : .gray)
+                                            .foregroundColor(quantity > 1 ? Color(hex: "FF5722") : Color(hex: "CCCCCC"))
                                     }
                                     .disabled(quantity <= 1)
 
                                     Spacer()
 
                                     Text("\(quantity)")
-                                        .font(.title)
-                                        .fontWeight(.bold)
+                                        .font(.system(.title, design: .rounded))
+                                        .fontWeight(.heavy)
+                                        .foregroundColor(Color(hex: "1A1A1A"))
                                         .frame(minWidth: 60)
 
                                     Spacer()
@@ -88,18 +111,20 @@ struct AddFoodItemView: View {
                             // Storage Location Picker
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Storage Location", systemImage: "refrigerator")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
 
-                                HStack(spacing: 12) {
-                                    ForEach(StorageLocation.allCases, id: \.self) { location in
-                                        LocationButton(
-                                            location: location,
-                                            isSelected: selectedLocation == location
-                                        ) {
-                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                                selectedLocation = location
+                                ScrollView(.horizontal, showsIndicators: false) {
+                                    HStack(spacing: 12) {
+                                        ForEach(storageLocations) { location in
+                                            LocationButton(
+                                                location: location,
+                                                isSelected: selectedLocation?.id == location.id
+                                            ) {
+                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                    selectedLocation = location
+                                                }
                                             }
                                         }
                                     }
@@ -109,21 +134,43 @@ struct AddFoodItemView: View {
                             // Category Picker
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Category", systemImage: "tag.fill")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
 
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 12) {
-                                        ForEach(FoodCategory.allCases, id: \.self) { category in
-                                            CategoryChip(
+                                        ForEach(foodCategories) { category in
+                                            AddCategoryChip(
                                                 category: category,
-                                                isSelected: selectedCategory == category
+                                                isSelected: selectedCategory?.id == category.id
                                             ) {
                                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                                     selectedCategory = category
                                                 }
                                             }
+                                        }
+
+                                        // Add custom category button
+                                        Button {
+                                            showAddCategory = true
+                                        } label: {
+                                            HStack(spacing: 6) {
+                                                Image(systemName: "plus.circle.fill")
+                                                    .font(.system(.caption, design: .rounded))
+                                                Text("Add Custom")
+                                                    .font(.system(.subheadline, design: .rounded))
+                                                    .fontWeight(.semibold)
+                                            }
+                                            .padding(.horizontal, 16)
+                                            .padding(.vertical, 10)
+                                            .background(Color(hex: "E3F2FD"))
+                                            .foregroundColor(Color(hex: "2196F3"))
+                                            .cornerRadius(20)
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 20)
+                                                    .stroke(Color(hex: "2196F3"), lineWidth: 1.5)
+                                            )
                                         }
                                     }
                                 }
@@ -132,13 +179,101 @@ struct AddFoodItemView: View {
                             // Notes Field
                             VStack(alignment: .leading, spacing: 8) {
                                 Label("Notes (Optional)", systemImage: "note.text")
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundStyle(.secondary)
+                                    .font(.system(.subheadline, design: .rounded))
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
 
-                                TextField("Add any notes...", text: $notes, axis: .vertical)
-                                    .textFieldStyle(CustomTextFieldStyle())
-                                    .lineLimit(3...5)
+                                ZStack(alignment: .topLeading) {
+                                    // Visible placeholder
+                                    if notes.isEmpty {
+                                        Text("Add any notes...")
+                                            .font(.system(.body, design: .rounded))
+                                            .fontWeight(.medium)
+                                            .foregroundColor(Color(hex: "999999"))
+                                            .padding(.leading, 16)
+                                            .padding(.top, 12)
+                                    }
+
+                                    TextField("", text: $notes, axis: .vertical)
+                                        .textFieldStyle(CustomTextFieldStyle())
+                                        .lineLimit(3...5)
+                                }
+                            }
+
+                            // Expiry Date Section
+                            VStack(alignment: .leading, spacing: 12) {
+                                HStack {
+                                    Label("Best Before / Expiry", systemImage: "calendar.badge.clock")
+                                        .font(.system(.subheadline, design: .rounded))
+                                        .fontWeight(.bold)
+                                        .foregroundColor(Color(hex: "1A1A1A"))
+
+                                    Spacer()
+
+                                    Toggle("", isOn: $hasExpiryDate)
+                                        .labelsHidden()
+                                        .tint(Color(hex: "4CAF50"))
+                                }
+
+                                if hasExpiryDate {
+                                    VStack(spacing: 12) {
+                                        // Quick days selector
+                                        HStack(spacing: 8) {
+                                            ForEach([3, 7, 14, 30], id: \.self) { days in
+                                                Button {
+                                                    daysUntilExpiry = days
+                                                    expiryDate = Date().addingTimeInterval(Double(days) * 24 * 60 * 60)
+                                                } label: {
+                                                    Text("\(days)d")
+                                                        .font(.system(.caption, design: .rounded))
+                                                        .fontWeight(.semibold)
+                                                        .foregroundColor(daysUntilExpiry == days ? .white : Color(hex: "1A1A1A"))
+                                                        .padding(.horizontal, 12)
+                                                        .padding(.vertical, 6)
+                                                        .background(daysUntilExpiry == days ? Color(hex: "FF9800") : Color.white)
+                                                        .cornerRadius(8)
+                                                        .overlay(
+                                                            RoundedRectangle(cornerRadius: 8)
+                                                                .stroke(Color.gray.opacity(0.2), lineWidth: 1)
+                                                        )
+                                                }
+                                                .buttonStyle(.borderless)
+                                            }
+                                        }
+
+                                        // Custom date picker
+                                        DatePicker(
+                                            "Expiry Date",
+                                            selection: $expiryDate,
+                                            in: Date()...,
+                                            displayedComponents: .date
+                                        )
+                                        .datePickerStyle(.compact)
+                                        .font(.system(.body, design: .rounded))
+                                        .tint(Color(hex: "FF9800"))
+                                        .padding()
+                                        .background(Color.white)
+                                        .cornerRadius(12)
+                                        .onChange(of: expiryDate) { _, newDate in
+                                            let days = Calendar.current.dateComponents([.day], from: Date(), to: newDate).day ?? 0
+                                            daysUntilExpiry = days
+                                        }
+
+                                        // Days count display
+                                        HStack {
+                                            Image(systemName: "clock.fill")
+                                                .foregroundColor(Color(hex: "FF9800"))
+                                            Text("Expires in \(daysUntilExpiry) day\(daysUntilExpiry == 1 ? "" : "s")")
+                                                .font(.system(.caption, design: .rounded))
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(Color(hex: "666666"))
+                                        }
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 6)
+                                        .background(Color(hex: "FFF3E0"))
+                                        .cornerRadius(8)
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal)
@@ -170,6 +305,7 @@ struct AddFoodItemView: View {
                     }
                     .padding(.vertical)
                 }
+                .scrollDismissesKeyboard(.immediately)
             }
             .navigationTitle("Add Food Item")
             .navigationBarTitleDisplayMode(.inline)
@@ -186,6 +322,25 @@ struct AddFoodItemView: View {
             .sheet(isPresented: $showImagePicker) {
                 ImagePicker(image: $capturedImage)
             }
+            .sheet(isPresented: $showAddCategory) {
+                AddCustomCategorySheet(
+                    categoryName: $customCategoryName,
+                    categoryIcon: $customCategoryIcon,
+                    onSave: {
+                        let newCategory = FoodCategory(
+                            name: customCategoryName,
+                            icon: customCategoryIcon,
+                            sortOrder: (foodCategories.map { $0.sortOrder }.max() ?? -1) + 1,
+                            isDefault: false
+                        )
+                        modelContext.insert(newCategory)
+                        selectedCategory = newCategory
+                        customCategoryName = ""
+                        customCategoryIcon = "📦"
+                        showAddCategory = false
+                    }
+                )
+            }
             .confirmationDialog("Choose Photo Source", isPresented: $showImageOptions) {
                 Button("Take Photo") {
                     showCamera = true
@@ -199,6 +354,16 @@ struct AddFoodItemView: View {
                     }
                 }
                 Button("Cancel", role: .cancel) {}
+            }
+            .onAppear {
+                // Set default storage location to first one (Fridge)
+                if selectedLocation == nil && !storageLocations.isEmpty {
+                    selectedLocation = storageLocations.first
+                }
+                // Set default category to "Other"
+                if selectedCategory == nil && !foodCategories.isEmpty {
+                    selectedCategory = foodCategories.first(where: { $0.name == "Other" }) ?? foodCategories.first
+                }
             }
         }
     }
@@ -246,12 +411,14 @@ struct AddFoodItemView: View {
 
                         VStack(spacing: 4) {
                             Text("Add Photo")
-                                .font(.headline)
-                                .foregroundColor(.primary)
+                                .font(.system(.headline, design: .rounded))
+                                .fontWeight(.bold)
+                                .foregroundColor(Color(hex: "1A1A1A"))
 
                             Text("Take a photo or choose from library")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(.system(.caption, design: .rounded))
+                                .fontWeight(.medium)
+                                .foregroundColor(Color(hex: "666666"))
                         }
                     }
                     .frame(maxWidth: .infinity)
@@ -280,16 +447,20 @@ struct AddFoodItemView: View {
     }
 
     private func saveItem() {
-        let imageData = capturedImage?.jpegData(compressionQuality: 0.8)
+        // Compress image more aggressively for better performance
+        let imageData = capturedImage?.jpegData(compressionQuality: 0.5)
 
         let item = FoodItem(
             name: name,
             quantity: quantity,
-            storageLocation: selectedLocation,
-            category: selectedCategory,
+            expiryDate: hasExpiryDate ? expiryDate : nil,
             photoData: imageData,
             notes: notes
         )
+
+        // Set relationships
+        item.storageLocation = selectedLocation
+        item.category = selectedCategory
 
         modelContext.insert(item)
         dismiss()
@@ -299,8 +470,12 @@ struct AddFoodItemView: View {
 struct CustomTextFieldStyle: TextFieldStyle {
     func _body(configuration: TextField<Self._Label>) -> some View {
         configuration
+            .font(.system(.body, design: .rounded))
+            .fontWeight(.medium)
             .padding()
             .background(Color.white)
+            .foregroundColor(Color(hex: "1A1A1A"))
+            .tint(Color(hex: "4CAF50"))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
@@ -319,25 +494,27 @@ struct LocationButton: View {
             VStack(spacing: 8) {
                 Image(systemName: location.icon)
                     .font(.title2)
+                    .fontWeight(.semibold)
 
-                Text(location.rawValue)
-                    .font(.caption)
-                    .fontWeight(.medium)
+                Text(location.name)
+                    .font(.system(.caption, design: .rounded))
+                    .fontWeight(.bold)
             }
-            .frame(maxWidth: .infinity)
+            .frame(minWidth: 80)
             .padding(.vertical, 16)
-            .background(isSelected ? Color(hex: "4CAF50") : Color.white)
-            .foregroundColor(isSelected ? .white : .primary)
+            .padding(.horizontal, 12)
+            .background(isSelected ? Color(hex: location.colorHex) : Color.white)
+            .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color(hex: "4CAF50") : Color.gray.opacity(0.2), lineWidth: 2)
+                    .stroke(isSelected ? Color(hex: location.colorHex) : Color.gray.opacity(0.2), lineWidth: 2)
             )
         }
     }
 }
 
-struct CategoryChip: View {
+struct AddCategoryChip: View {
     let category: FoodCategory
     let isSelected: Bool
     let action: () -> Void
@@ -347,19 +524,105 @@ struct CategoryChip: View {
             HStack(spacing: 6) {
                 Text(category.icon)
                     .font(.body)
-                Text(category.rawValue)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                Text(category.name)
+                    .font(.system(.subheadline, design: .rounded))
+                    .fontWeight(.semibold)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
             .background(isSelected ? Color(hex: "4CAF50") : Color.white)
-            .foregroundColor(isSelected ? .white : .primary)
+            .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
                     .stroke(isSelected ? Color(hex: "4CAF50") : Color.gray.opacity(0.2), lineWidth: 1.5)
             )
         }
+    }
+}
+
+struct AddCustomCategorySheet: View {
+    @Environment(\.dismiss) var dismiss
+    @Binding var categoryName: String
+    @Binding var categoryIcon: String
+    let onSave: () -> Void
+
+    let availableIcons = [
+        "🥩", "🍗", "🐟", "🥬", "🥕", "🍎", "🍊", "🥛",
+        "🧀", "🍞", "🥐", "🍕", "🍔", "🍱", "🍜", "🧃",
+        "☕", "🍰", "🍪", "🥫", "🌰", "🥚", "🍚", "📦"
+    ]
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    ZStack(alignment: .leading) {
+                        if categoryName.isEmpty {
+                            Text("Category Name")
+                                .font(.system(.body, design: .rounded))
+                                .foregroundColor(Color(hex: "999999"))
+                        }
+                        TextField("", text: $categoryName)
+                            .font(.system(.body, design: .rounded))
+                            .foregroundColor(Color(hex: "1A1A1A"))
+                    }
+                }
+
+                Section(header: Text("Choose Icon")) {
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible()),
+                            GridItem(.flexible())
+                        ],
+                        spacing: 12
+                    ) {
+                        ForEach(availableIcons, id: \.self) { icon in
+                            Button {
+                                categoryIcon = icon
+                            } label: {
+                                Text(icon)
+                                    .font(.system(size: 32))
+                                    .frame(width: 50, height: 50)
+                                    .background(categoryIcon == icon ? Color(hex: "E8F4F8") : Color.clear)
+                                    .cornerRadius(8)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(categoryIcon == icon ? Color(hex: "4CAF50") : Color.clear, lineWidth: 2)
+                                    )
+                            }
+                        }
+                    }
+                }
+            }
+            .scrollDismissesKeyboard(.immediately)
+            .navigationTitle("Add Category")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Save") {
+                        onSave()
+                    }
+                    .disabled(categoryName.trimmingCharacters(in: .whitespaces).isEmpty)
+                }
+            }
+        }
+    }
+}
+
+// MARK: - Keyboard Dismissal Extension
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
 }

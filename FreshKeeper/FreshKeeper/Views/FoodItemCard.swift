@@ -7,7 +7,6 @@ import SwiftUI
 
 struct FoodItemCard: View {
     let item: FoodItem
-    @State private var isPressed = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -31,63 +30,91 @@ struct FoodItemCard: View {
                             endPoint: .bottomTrailing
                         )
 
-                        Text(item.category.icon)
+                        Text(item.category?.icon ?? "📦")
                             .font(.system(size: 50))
                     }
                     .frame(height: 140)
                 }
 
                 // Location Badge
-                HStack(spacing: 4) {
-                    Image(systemName: item.storageLocation.icon)
-                        .font(.caption2)
-                    Text(item.storageLocation.rawValue)
-                        .font(.caption2)
-                        .fontWeight(.semibold)
+                if let location = item.storageLocation {
+                    HStack(spacing: 4) {
+                        Image(systemName: location.icon)
+                            .font(.caption2)
+                        Text(location.name)
+                            .font(.caption2)
+                            .fontWeight(.semibold)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(8)
+                    .padding(8)
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(.ultraThinMaterial)
-                .cornerRadius(8)
-                .padding(8)
             }
 
             // Info Section
             VStack(alignment: .leading, spacing: 8) {
                 Text(item.name)
-                    .font(.headline)
-                    .foregroundColor(.primary)
+                    .font(.system(.headline, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: "1A1A1A"))
                     .lineLimit(1)
 
                 HStack {
                     Label("\(item.quantity)", systemImage: "cube.box.fill")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .font(.system(.subheadline, design: .rounded))
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color(hex: "4CAF50"))
 
                     Spacer()
 
                     Text(timeAgo(from: item.dateAdded))
-                        .font(.caption)
-                        .foregroundStyle(.tertiary)
+                        .font(.system(.caption, design: .rounded))
+                        .fontWeight(.medium)
+                        .foregroundColor(Color(hex: "999999"))
+                }
+
+                // Expiry Information - Show for all items with expiry date
+                if item.expiryDate != nil {
+                    HStack(spacing: 4) {
+                        Image(systemName: item.isExpired ? "exclamationmark.triangle.fill" : item.isExpiringSoon ? "clock.fill" : "calendar")
+                            .font(.caption2)
+                        Text(expiryText())
+                            .font(.system(.caption2, design: .rounded))
+                            .fontWeight(.bold)
+                    }
+                    .foregroundColor(item.isExpired || item.isExpiringSoon ? .white : Color(hex: "1A1A1A"))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(
+                        item.isExpired ? Color(hex: "F44336") :
+                        item.isExpiringSoon ? Color(hex: "FF9800") :
+                        Color(hex: "E8F4F8")
+                    )
+                    .cornerRadius(6)
                 }
             }
             .padding(12)
         }
         .background(Color.white)
         .cornerRadius(16)
-        .shadow(color: .black.opacity(isPressed ? 0.15 : 0.08), radius: isPressed ? 8 : 5, x: 0, y: isPressed ? 4 : 2)
-        .scaleEffect(isPressed ? 0.97 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.6), value: isPressed)
-        .onLongPressGesture(minimumDuration: 0, maximumDistance: 50) {
-            // On release
-        } onPressingChanged: { pressing in
-            isPressed = pressing
-        }
+        .shadow(color: .black.opacity(0.08), radius: 5, x: 0, y: 2)
     }
 
     private func timeAgo(from date: Date) -> String {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
         return formatter.localizedString(for: date, relativeTo: Date())
+    }
+
+    private func expiryText() -> String {
+        if item.isExpired {
+            let days = abs(item.daysUntilExpiry ?? 0)
+            return days == 0 ? "Expired today" : "Expired \(days)d ago"
+        } else if let days = item.daysUntilExpiry {
+            return days == 0 ? "Expires today" : days == 1 ? "Expires tomorrow" : "Expires in \(days)d"
+        }
+        return ""
     }
 }

@@ -6,90 +6,226 @@
 import SwiftUI
 import SwiftData
 
+enum ItemFilter {
+    case all
+    case expiringSoon
+    case expired
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var foodItems: [FoodItem]
+    @Query(sort: \FoodItem.dateAdded, order: .reverse) private var foodItems: [FoodItem]
+    @Query(sort: \StorageLocation.sortOrder) private var storageLocations: [StorageLocation]
+    @Query(sort: \FoodCategory.sortOrder) private var foodCategories: [FoodCategory]
     @State private var showingAddItem = false
+    @State private var showingManageStorage = false
     @State private var selectedLocation: StorageLocation?
+    @State private var selectedCategory: FoodCategory?
+    @State private var selectedFilter: ItemFilter = .all
     @State private var searchText = ""
+    @State private var showFilters = false
 
     var filteredItems: [FoodItem] {
         var items = foodItems
 
-        if let location = selectedLocation {
-            items = items.filter { $0.storageLocation == location }
+        // Filter by status (all/expiring/expired)
+        switch selectedFilter {
+        case .all:
+            break // Show all
+        case .expiringSoon:
+            items = items.filter { $0.isExpiringSoon && !$0.isExpired }
+        case .expired:
+            items = items.filter { $0.isExpired }
         }
 
+        // Filter by storage location
+        if let location = selectedLocation {
+            items = items.filter { $0.storageLocation?.id == location.id }
+        }
+
+        // Filter by category
+        if let category = selectedCategory {
+            items = items.filter { $0.category?.id == category.id }
+        }
+
+        // Filter by search text
         if !searchText.isEmpty {
             items = items.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
 
-        return items.sorted { $0.dateAdded > $1.dateAdded }
+        return items
+    }
+
+    var hasActiveFilters: Bool {
+        selectedLocation != nil || selectedCategory != nil
     }
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                // Background gradient
+            ScrollView {
+                VStack(spacing: 0) {
+                    // Header Stats
+                    statsSection
+
+                    // Location Filter (always visible)
+                    locationFilterSection
+
+                    // Category Filter (collapsible with filter button)
+                    if showFilters && !foodCategories.isEmpty {
+                        categoryFilterSection
+                            .transition(.move(edge: .top).combined(with: .opacity))
+                    }
+
+                    // Food Items Grid
+                    if filteredItems.isEmpty {
+                        emptyStateView
+                    } else {
+                        foodItemsGridContent
+                    }
+                }
+            }
+            .background(
                 LinearGradient(
                     colors: [Color(hex: "E8F4F8"), Color(hex: "F8F9FA")],
                     startPoint: .topLeading,
                     endPoint: .bottomTrailing
                 )
                 .ignoresSafeArea()
-
-                VStack(spacing: 0) {
-                    // Header Stats
-                    statsSection
-
-                    // Location Filter
-                    locationFilterSection
-
-                    // Food Items Grid
-                    if filteredItems.isEmpty {
-                        emptyStateView
-                    } else {
-                        foodItemsGrid
-                    }
-                }
-            }
+            )
             .navigationTitle("FreshKeeper")
             .navigationBarTitleDisplayMode(.large)
+            .toolbarBackground(Color(hex: "E8F4F8"), for: .navigationBar)
+            .toolbarBackground(.visible, for: .navigationBar)
             .searchable(text: $searchText, prompt: "Search food items...")
+            .task {
+                // Set up navigation bar appearance with BLACK text
+                let appearance = UINavigationBarAppearance()
+                appearance.configureWithOpaqueBackground()
+                appearance.backgroundColor = UIColor(red: 0.91, green: 0.96, blue: 0.97, alpha: 1.0)
+
+                // LARGE TITLE - BLACK
+                appearance.largeTitleTextAttributes = [
+                    .foregroundColor: UIColor.black
+                ]
+
+                // SMALL TITLE - BLACK
+                appearance.titleTextAttributes = [
+                    .foregroundColor: UIColor.black
+                ]
+
+                // Apply globally to all navigation bars
+                UINavigationBar.appearance().standardAppearance = appearance
+                UINavigationBar.appearance().scrollEdgeAppearance = appearance
+                UINavigationBar.appearance().compactAppearance = appearance
+            }
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button {
-                        showingAddItem = true
+                        showingManageStorage = true
                     } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .symbolRenderingMode(.palette)
-                            .foregroundStyle(.white, Color(hex: "4CAF50"))
+                        Image(systemName: "square.grid.3x3.fill")
+                            .font(.title3)
+                            .foregroundColor(Color(hex: "666666"))
+                    }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    HStack(spacing: 12) {
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                showFilters.toggle()
+                            }
+                        } label: {
+                            ZStack {
+                                Image(systemName: showFilters ? "line.3.horizontal.decrease.circle.fill" : "line.3.horizontal.decrease.circle")
+                                    .font(.title3)
+                                    .foregroundColor(showFilters ? Color(hex: "2196F3") : Color(hex: "666666"))
+
+                                if hasActiveFilters {
+                                    Circle()
+                                        .fill(Color(hex: "FF5722"))
+                                        .frame(width: 8, height: 8)
+                                        .offset(x: 10, y: -10)
+                                }
+                            }
+                        }
+
+                        Button {
+                            showingAddItem = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .symbolRenderingMode(.palette)
+                                .foregroundStyle(.white, Color(hex: "4CAF50"))
+                        }
                     }
                 }
             }
             .sheet(isPresented: $showingAddItem) {
                 AddFoodItemView()
             }
+            .sheet(isPresented: $showingManageStorage) {
+                StorageManagementView()
+            }
         }
     }
 
     private var statsSection: some View {
-        HStack(spacing: 16) {
-            StatCard(
-                title: "Total Items",
-                value: "\(foodItems.count)",
-                icon: "square.grid.2x2.fill",
-                color: Color(hex: "4CAF50")
-            )
-            StatCard(
-                title: "Total Stock",
-                value: "\(foodItems.reduce(0) { $0 + $1.quantity })",
-                icon: "cube.box.fill",
-                color: Color(hex: "2196F3")
-            )
+        HStack(spacing: 12) {
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    selectedFilter = .all
+                    selectedLocation = nil
+                    selectedCategory = nil
+                }
+            } label: {
+                StatCard(
+                    title: "Total Items",
+                    value: "\(foodItems.count)",
+                    icon: "square.grid.2x2.fill",
+                    color: Color(hex: "4CAF50"),
+                    isSelected: selectedFilter == .all
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    selectedFilter = selectedFilter == .expiringSoon ? .all : .expiringSoon
+                    selectedLocation = nil
+                    selectedCategory = nil
+                }
+            } label: {
+                StatCard(
+                    title: "Expiring Soon",
+                    value: "\(foodItems.filter { $0.isExpiringSoon && !$0.isExpired }.count)",
+                    icon: "clock.fill",
+                    color: Color(hex: "FF9800"),
+                    isSelected: selectedFilter == .expiringSoon
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+
+            Button {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                    selectedFilter = selectedFilter == .expired ? .all : .expired
+                    selectedLocation = nil
+                    selectedCategory = nil
+                }
+            } label: {
+                StatCard(
+                    title: "Expired",
+                    value: "\(foodItems.filter { $0.isExpired }.count)",
+                    icon: "exclamationmark.triangle.fill",
+                    color: Color(hex: "F44336"),
+                    isSelected: selectedFilter == .expired
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
         }
         .padding()
+        .contentShape(Rectangle())
+        .zIndex(1)
     }
 
     private var locationFilterSection: some View {
@@ -99,80 +235,196 @@ struct ContentView: View {
                     title: "All",
                     isSelected: selectedLocation == nil
                 ) {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedLocation = nil
-                    }
+                    selectedLocation = nil
                 }
 
-                ForEach(StorageLocation.allCases, id: \.self) { location in
+                ForEach(storageLocations) { location in
                     FilterChip(
-                        title: location.rawValue,
+                        title: location.name,
                         icon: location.icon,
-                        isSelected: selectedLocation == location
+                        isSelected: selectedLocation?.id == location.id
                     ) {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                            selectedLocation = selectedLocation == location ? nil : location
-                        }
+                        selectedLocation = selectedLocation?.id == location.id ? nil : location
                     }
                 }
             }
             .padding(.horizontal)
         }
         .padding(.vertical, 8)
+        .background(Color(hex: "F8F9FA"))
+        .contentShape(Rectangle())
+        .zIndex(1)
     }
 
-    private var foodItemsGrid: some View {
-        ScrollView {
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(), spacing: 16),
-                    GridItem(.flexible(), spacing: 16)
-                ],
-                spacing: 16
-            ) {
-                ForEach(filteredItems) { item in
-                    NavigationLink(destination: FoodItemDetailView(item: item)) {
-                        FoodItemCard(item: item)
+    private var categoryFilterSection: some View {
+        VStack(spacing: 8) {
+            categoryFilterHeader
+            categoryFilterChips
+        }
+        .padding(.vertical, 8)
+        .background(Color(hex: "F8F9FA"))
+        .contentShape(Rectangle())
+        .zIndex(1)
+    }
+
+    private var categoryFilterHeader: some View {
+        HStack {
+            Text("Filter by Category")
+                .font(.system(.caption, design: .rounded))
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "666666"))
+                .padding(.leading, 16)
+
+            Spacer()
+
+            if hasActiveFilters {
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        selectedFilter = .all
+                        selectedLocation = nil
+                        selectedCategory = nil
                     }
-                    .buttonStyle(PlainButtonStyle())
+                } label: {
+                    HStack(spacing: 4) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.caption)
+                        Text("Clear Filters")
+                            .font(.system(.caption, design: .rounded))
+                            .fontWeight(.semibold)
+                    }
+                    .foregroundColor(Color(hex: "FF5722"))
+                    .padding(.trailing, 16)
                 }
             }
-            .padding()
         }
+    }
+
+    private var categoryFilterChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 12) {
+                ForEach(foodCategories) { category in
+                    Button {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            selectedCategory = selectedCategory?.id == category.id ? nil : category
+                        }
+                    } label: {
+                        HStack(spacing: 6) {
+                            Text(category.icon)
+                                .font(.system(.caption, design: .rounded))
+                            Text(category.name)
+                                .font(.system(.subheadline, design: .rounded))
+                                .fontWeight(.semibold)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(selectedCategory?.id == category.id ? Color(hex: "2196F3") : Color.white)
+                        .foregroundColor(selectedCategory?.id == category.id ? .white : Color(hex: "1A1A1A"))
+                        .cornerRadius(20)
+                        .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
+                    }
+                    .buttonStyle(.borderless)
+                }
+            }
+            .padding(.horizontal)
+        }
+    }
+
+    private var foodItemsGridContent: some View {
+        LazyVGrid(
+            columns: [
+                GridItem(.flexible(), spacing: 16),
+                GridItem(.flexible(), spacing: 16)
+            ],
+            spacing: 16
+        ) {
+            ForEach(filteredItems) { item in
+                NavigationLink(destination: FoodItemDetailView(item: item)) {
+                    FoodItemCard(item: item)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+        }
+        .padding()
     }
 
     private var emptyStateView: some View {
         VStack(spacing: 20) {
-            Image(systemName: "refrigerator")
-                .font(.system(size: 80))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color(hex: "4CAF50"), Color(hex: "2196F3")],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+            if hasActiveFilters {
+                // Empty state with filters active
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 80))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color(hex: "4CAF50"), Color(hex: "2196F3")],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
-                .opacity(0.3)
+                    .opacity(0.3)
 
-            Text("Your inventory is empty")
-                .font(.title2)
-                .fontWeight(.semibold)
+                Text("No items found")
+                    .font(.system(.title2, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: "1A1A1A"))
 
-            Text("Start by adding your first food item")
-                .foregroundStyle(.secondary)
+                Text("Try adjusting your filters")
+                    .font(.system(.body, design: .rounded))
+                    .fontWeight(.medium)
+                    .foregroundColor(Color(hex: "666666"))
 
-            Button {
-                showingAddItem = true
-            } label: {
-                Label("Add Food Item", systemImage: "plus.circle.fill")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Color(hex: "4CAF50"))
-                    .cornerRadius(12)
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                        selectedFilter = .all
+                        selectedLocation = nil
+                        selectedCategory = nil
+                        searchText = ""
+                    }
+                } label: {
+                    Label("Clear All Filters", systemImage: "xmark.circle.fill")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color(hex: "2196F3"))
+                        .cornerRadius(12)
+                }
+                .padding(.top)
+            } else {
+                // Empty state without filters
+                Image(systemName: "refrigerator")
+                    .font(.system(size: 80))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color(hex: "4CAF50"), Color(hex: "2196F3")],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .opacity(0.3)
+
+                Text("Your inventory is empty")
+                    .font(.system(.title2, design: .rounded))
+                    .fontWeight(.bold)
+                    .foregroundColor(Color(hex: "1A1A1A"))
+
+                Text("Start by adding your first food item")
+                    .font(.system(.body, design: .rounded))
+                    .fontWeight(.medium)
+                    .foregroundColor(Color(hex: "666666"))
+
+                Button {
+                    showingAddItem = true
+                } label: {
+                    Label("Add Food Item", systemImage: "plus.circle.fill")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color(hex: "4CAF50"))
+                        .cornerRadius(12)
+                }
+                .padding(.top)
             }
-            .padding(.top)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -183,26 +435,42 @@ struct StatCard: View {
     let value: String
     let icon: String
     let color: Color
+    var isSelected: Bool = false
 
     var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(value)
-                    .font(.title2)
-                    .fontWeight(.bold)
+        VStack(spacing: 8) {
+            // Icon with colored background
+            ZStack {
+                Circle()
+                    .fill(isSelected ? color : color.opacity(0.15))
+                    .frame(width: 44, height: 44)
+                Image(systemName: icon)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundColor(isSelected ? .white : color)
             }
-            Spacer()
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
+
+            // Value
+            Text(value)
+                .font(.system(.title, design: .rounded))
+                .fontWeight(.heavy)
+                .foregroundColor(Color(hex: "1A1A1A"))
+
+            // Title
+            Text(title)
+                .font(.system(.caption, design: .rounded))
+                .fontWeight(.semibold)
+                .foregroundColor(Color(hex: "666666"))
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .fixedSize(horizontal: false, vertical: true)
         }
-        .padding()
-        .background(Color.white)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .padding(.horizontal, 8)
+        .background(isSelected ? color.opacity(0.1) : Color.white)
         .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .shadow(color: .black.opacity(isSelected ? 0.1 : 0.05), radius: isSelected ? 8 : 5, x: 0, y: isSelected ? 4 : 2)
     }
 }
 
@@ -217,19 +485,21 @@ struct FilterChip: View {
             HStack(spacing: 6) {
                 if let icon = icon {
                     Image(systemName: icon)
-                        .font(.caption)
+                        .font(.system(.caption, design: .rounded))
+                        .fontWeight(.semibold)
                 }
                 Text(title)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(.system(.subheadline, design: .rounded))
+                    .fontWeight(.semibold)
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             .background(isSelected ? Color(hex: "4CAF50") : Color.white)
-            .foregroundColor(isSelected ? .white : .primary)
+            .foregroundColor(isSelected ? .white : Color(hex: "1A1A1A"))
             .cornerRadius(20)
             .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2)
         }
+        .buttonStyle(.borderless)
     }
 }
 
