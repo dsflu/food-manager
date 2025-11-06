@@ -307,14 +307,17 @@ class OpenAIService {
                     Use this exact format:
                     {
                         "foodName": "specific name of the food",
-                        "category": "exactly one of: Fruits, Vegetables, Dairy, Meat & Fish, Bakery, Beverages, Snacks, Other",
+                        "category": "exactly one of: Meat, Vegetables, Fruits, Dairy, Bread, Beverages, Prepared Meals, Other",
                         "confidence": "exactly one of: high, medium, low",
                         "additionalInfo": "brief note if relevant or null"
                     }
 
                     Rules:
                     - Be specific with food names (e.g., "Granny Smith Apples" not just "Apples")
-                    - Category must be EXACTLY one of the 8 options listed above
+                    - Category must be EXACTLY one of the 8 options listed above (case-sensitive)
+                    - Use "Meat" for all meats, poultry, and fish
+                    - Use "Bread" for bakery items like bread, pastries, cakes
+                    - Use "Prepared Meals" for ready-to-eat meals, leftovers, or meal prep items
                     - Confidence must be EXACTLY one of: high, medium, low
                     - Do not include any markdown formatting or code blocks
                     - Return only the JSON object, nothing else

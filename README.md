@@ -11,6 +11,9 @@
 
 ## ✨ Features
 
+### 🤖 AI-Powered Food Recognition
+Take a photo and let AI identify the food and category automatically (OpenAI integration)
+
 ### 📸 Visual Inventory at a Glance
 Track your food with photos and see everything in a beautiful grid layout
 
@@ -21,7 +24,7 @@ Color-coded alerts show what's expiring soon - never waste food again
 Organize by Fridge, Freezer, Pantry, or create custom locations
 
 ### 📦 Quick Stock Management
-Update quantities with a tap, auto-delete at zero
+Direct quantity input for large numbers, auto-delete at zero
 
 ### 🔍 Instant Search & Filters
 Find what you need in seconds with powerful filtering
@@ -59,14 +62,21 @@ open FreshKeeper/FreshKeeper.xcodeproj
 ### Add Your First Item
 1. Tap the **+** button
 2. Snap a photo (optional)
-3. Enter name and quantity
-4. Set expiry date with quick shortcuts
-5. Tap "Add to Inventory"
+3. Use **"AI Identify"** to auto-detect food name and category
+4. Enter or adjust quantity (tap number for direct input)
+5. Set expiry date with quick shortcuts
+6. Tap "Add to Inventory"
+
+### AI Food Recognition (Optional)
+- Go to **Settings** (gear icon)
+- Add your OpenAI API key
+- Choose model: GPT-4.1 Nano (cheapest) or GPT-4o Mini (most accurate)
+- Take photos and let AI identify foods automatically!
 
 ### Stay Organized
 - **Filter by location**: Tap "Fridge" or "Freezer" chips
 - **Search**: Pull down to reveal the search bar
-- **Update quantities**: Tap any item and use +/- buttons
+- **Update quantities**: Tap number for direct input or use +/- buttons
 - **Custom categories**: Create your own with emojis!
 
 ### Track Expiry Dates

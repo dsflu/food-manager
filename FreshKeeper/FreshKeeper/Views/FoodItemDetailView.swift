@@ -20,6 +20,8 @@ struct FoodItemDetailView: View {
     @State private var showEditPhoto = false
     @State private var showCamera = false
     @State private var capturedImage: UIImage?
+    @State private var quantityText = ""
+    @FocusState private var isEditingQuantity: Bool
 
     var body: some View {
         ScrollView {
@@ -35,6 +37,9 @@ struct FoodItemDetailView: View {
         .background(Color(hex: "F8F9FA"))
         .navigationTitle(item.name)
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            quantityText = "\(item.quantity)"
+        }
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
@@ -42,6 +47,26 @@ struct FoodItemDetailView: View {
                 } label: {
                     Image(systemName: "pencil.circle.fill")
                         .foregroundColor(Color(hex: "2196F3"))
+                }
+            }
+
+            // Add Done button for keyboard when editing quantity
+            ToolbarItem(placement: .keyboard) {
+                if isEditingQuantity {
+                    HStack {
+                        Spacer()
+                        Button("Done") {
+                            isEditingQuantity = false
+                            // Ensure valid quantity
+                            if quantityText.isEmpty || item.quantity == 0 {
+                                item.quantity = 1
+                                quantityText = "1"
+                            }
+                        }
+                        .font(.system(.body, design: .rounded))
+                        .fontWeight(.semibold)
+                        .foregroundColor(Color(hex: "4CAF50"))
+                    }
                 }
             }
         }
@@ -196,7 +221,7 @@ struct FoodItemDetailView: View {
                             .disabled(item.quantity <= 0)
 
                             VStack(spacing: 4) {
-                                Text("\(item.quantity)")
+                                TextField("", text: $quantityText)
                                     .font(.system(size: 56, weight: .bold, design: .rounded))
                                     .foregroundStyle(
                                         LinearGradient(
@@ -204,6 +229,40 @@ struct FoodItemDetailView: View {
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         )
+                                    )
+                                    .multilineTextAlignment(.center)
+                                    .frame(minWidth: 100)
+                                    .keyboardType(.numberPad)
+                                    .focused($isEditingQuantity)
+                                    .onChange(of: quantityText) { oldValue, newValue in
+                                        // Filter out non-numeric characters
+                                        let filtered = newValue.filter { $0.isNumber }
+                                        if filtered != newValue {
+                                            quantityText = filtered
+                                        }
+
+                                        // Update quantity if valid
+                                        if let newQuantity = Int(filtered), newQuantity > 0 {
+                                            item.quantity = newQuantity
+                                            triggerUpdateAnimation()
+                                        } else if filtered.isEmpty {
+                                            // Keep the current quantity but allow empty text for typing
+                                        } else if filtered == "0" {
+                                            quantityText = "1"
+                                            item.quantity = 1
+                                        }
+                                    }
+                                    .onSubmit {
+                                        // Ensure valid quantity on submit
+                                        if quantityText.isEmpty || item.quantity == 0 {
+                                            item.quantity = 1
+                                            quantityText = "1"
+                                        }
+                                        isEditingQuantity = false
+                                    }
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 12)
+                                            .stroke(isEditingQuantity ? Color(hex: "4CAF50") : Color.clear, lineWidth: 3)
                                     )
                                     .scaleEffect(showUpdateAnimation ? 1.2 : 1.0)
                                     .animation(.spring(response: 0.3, dampingFraction: 0.5), value: showUpdateAnimation)
@@ -326,6 +385,7 @@ struct FoodItemDetailView: View {
     private func increaseQuantity() {
         withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
             item.quantity += 1
+            quantityText = "\(item.quantity)"
             triggerUpdateAnimation()
         }
     }
@@ -334,6 +394,7 @@ struct FoodItemDetailView: View {
         if item.quantity > 1 {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
                 item.quantity -= 1
+                quantityText = "\(item.quantity)"
                 triggerUpdateAnimation()
             }
         } else {

@@ -14,6 +14,8 @@ struct AddFoodItemView: View {
 
     @State private var name = ""
     @State private var quantity = 1
+    @State private var quantityText = "1"
+    @FocusState private var isEditingQuantity: Bool
     @State private var selectedLocation: StorageLocation?
     @State private var selectedCategory: FoodCategory?
     @State private var notes = ""
@@ -85,6 +87,7 @@ struct AddFoodItemView: View {
                                     Button {
                                         if quantity > 1 {
                                             quantity -= 1
+                                            quantityText = "\(quantity)"
                                         }
                                     } label: {
                                         Image(systemName: "minus.circle.fill")
@@ -95,16 +98,50 @@ struct AddFoodItemView: View {
 
                                     Spacer()
 
-                                    Text("\(quantity)")
+                                    // Tap to edit quantity directly
+                                    TextField("", text: $quantityText)
                                         .font(.system(.title, design: .rounded))
                                         .fontWeight(.heavy)
                                         .foregroundColor(Color(hex: "1A1A1A"))
-                                        .frame(minWidth: 60)
+                                        .multilineTextAlignment(.center)
+                                        .frame(minWidth: 80)
+                                        .keyboardType(.numberPad)
+                                        .focused($isEditingQuantity)
+                                        .onChange(of: quantityText) { oldValue, newValue in
+                                            // Filter out non-numeric characters
+                                            let filtered = newValue.filter { $0.isNumber }
+                                            if filtered != newValue {
+                                                quantityText = filtered
+                                            }
+
+                                            // Update quantity if valid
+                                            if let newQuantity = Int(filtered), newQuantity > 0 {
+                                                quantity = newQuantity
+                                            } else if filtered.isEmpty {
+                                                // Keep the current quantity but allow empty text for typing
+                                            } else if filtered == "0" {
+                                                quantityText = "1"
+                                                quantity = 1
+                                            }
+                                        }
+                                        .onSubmit {
+                                            // Ensure valid quantity on submit
+                                            if quantityText.isEmpty || quantity == 0 {
+                                                quantity = 1
+                                                quantityText = "1"
+                                            }
+                                            isEditingQuantity = false
+                                        }
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(isEditingQuantity ? Color(hex: "4CAF50") : Color.clear, lineWidth: 2)
+                                        )
 
                                     Spacer()
 
                                     Button {
                                         quantity += 1
+                                        quantityText = "\(quantity)"
                                     } label: {
                                         Image(systemName: "plus.circle.fill")
                                             .font(.title2)
@@ -321,6 +358,26 @@ struct AddFoodItemView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
                         dismiss()
+                    }
+                }
+
+                // Add Done button for keyboard when editing quantity
+                ToolbarItem(placement: .keyboard) {
+                    if isEditingQuantity {
+                        HStack {
+                            Spacer()
+                            Button("Done") {
+                                isEditingQuantity = false
+                                // Ensure valid quantity
+                                if quantityText.isEmpty || quantity == 0 {
+                                    quantity = 1
+                                    quantityText = "1"
+                                }
+                            }
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.semibold)
+                            .foregroundColor(Color(hex: "4CAF50"))
+                        }
                     }
                 }
             }
