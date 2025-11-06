@@ -19,6 +19,7 @@ struct ContentView: View {
     @Query(sort: \FoodCategory.sortOrder) private var foodCategories: [FoodCategory]
     @State private var showingAddItem = false
     @State private var showingManageStorage = false
+    @State private var showingSettings = false
     @State private var selectedLocation: StorageLocation?
     @State private var selectedCategory: FoodCategory?
     @State private var selectedFilter: ItemFilter = .all
@@ -140,12 +141,22 @@ struct ContentView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        showingManageStorage = true
-                    } label: {
-                        Image(systemName: "square.grid.3x3.fill")
-                            .font(.title3)
-                            .foregroundColor(Color(hex: "666666"))
+                    HStack(spacing: 12) {
+                        Button {
+                            showingManageStorage = true
+                        } label: {
+                            Image(systemName: "square.grid.3x3.fill")
+                                .font(.title3)
+                                .foregroundColor(Color(hex: "666666"))
+                        }
+
+                        Button {
+                            showingSettings = true
+                        } label: {
+                            Image(systemName: "gearshape.fill")
+                                .font(.title3)
+                                .foregroundColor(Color(hex: "666666"))
+                        }
                     }
                 }
 
@@ -186,6 +197,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingManageStorage) {
                 StorageManagementView()
+            }
+            .sheet(isPresented: $showingSettings) {
+                SettingsView()
             }
         }
     }

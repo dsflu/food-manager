@@ -28,6 +28,14 @@ struct AddFoodItemView: View {
     @State private var customCategoryName = ""
     @State private var customCategoryIcon = "📦"
 
+    // AI Identification States
+    @State private var isIdentifyingFood = false
+    @State private var identificationError: String?
+    @State private var showAPIKeyAlert = false
+    @State private var aiConfidenceMessage: String?
+
+    private let openAIService = OpenAIService.shared
+
     var body: some View {
         NavigationStack {
             ZStack {
@@ -365,6 +373,15 @@ struct AddFoodItemView: View {
                     selectedCategory = foodCategories.first(where: { $0.name == "Other" }) ?? foodCategories.first
                 }
             }
+            .alert("API Key Required", isPresented: $showAPIKeyAlert) {
+                Button("Go to Settings") {
+                    // In a real app, you'd navigate to settings here
+                    // For now, we'll just dismiss
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Please configure your OpenAI API key in Settings to use AI food identification.")
+            }
         }
     }
 
@@ -435,13 +452,81 @@ struct AddFoodItemView: View {
             }
 
             if capturedImage != nil {
-                Button {
-                    showImageOptions = true
-                } label: {
-                    Label("Change Photo", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.subheadline)
-                        .foregroundColor(Color(hex: "2196F3"))
+                HStack(spacing: 12) {
+                    Button {
+                        showImageOptions = true
+                    } label: {
+                        Label("Change Photo", systemImage: "arrow.triangle.2.circlepath")
+                            .font(.subheadline)
+                            .foregroundColor(Color(hex: "2196F3"))
+                    }
+
+                    // AI Identification Button
+                    Button {
+                        if !openAIService.hasAPIKey {
+                            showAPIKeyAlert = true
+                        } else {
+                            identifyFoodWithAI()
+                        }
+                    } label: {
+                        HStack {
+                            if isIdentifyingFood {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                                    .tint(.white)
+                            } else {
+                                Image(systemName: "wand.and.stars")
+                            }
+                            Text(isIdentifyingFood ? "Identifying..." : "AI Identify")
+                                .font(.system(.subheadline, design: .rounded))
+                                .fontWeight(.semibold)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "9C27B0"), Color(hex: "7B1FA2")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(20)
+                        .opacity(isIdentifyingFood ? 0.7 : 1.0)
+                    }
+                    .disabled(isIdentifyingFood)
                 }
+            }
+
+            // AI Confidence/Error Message
+            if let confidenceMessage = aiConfidenceMessage {
+                HStack {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundColor(Color(hex: "4CAF50"))
+                    Text(confidenceMessage)
+                        .font(.system(.caption, design: .rounded))
+                        .fontWeight(.medium)
+                        .foregroundColor(Color(hex: "666666"))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color(hex: "E8F5E9"))
+                .cornerRadius(8)
+            }
+
+            if let error = identificationError {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(Color(hex: "FF5722"))
+                    Text(error)
+                        .font(.system(.caption, design: .rounded))
+                        .fontWeight(.medium)
+                        .foregroundColor(Color(hex: "666666"))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color(hex: "FFEBEE"))
+                .cornerRadius(8)
             }
         }
     }
@@ -464,6 +549,57 @@ struct AddFoodItemView: View {
 
         modelContext.insert(item)
         dismiss()
+    }
+
+    private func identifyFoodWithAI() {
+        guard let image = capturedImage else { return }
+
+        isIdentifyingFood = true
+        identificationError = nil
+        aiConfidenceMessage = nil
+
+        Task {
+            do {
+                let result = try await openAIService.identifyFood(from: image)
+
+                // Run UI updates on main thread
+                await MainActor.run {
+                    // Set the food name
+                    name = result.foodName
+
+                    // Find and select the matching category
+                    if let matchingCategory = foodCategories.first(where: {
+                        $0.name.lowercased() == result.category.lowercased()
+                    }) {
+                        selectedCategory = matchingCategory
+                    }
+
+                    // Set confidence message
+                    switch result.confidence.lowercased() {
+                    case "high":
+                        aiConfidenceMessage = "AI identified with high confidence"
+                    case "medium":
+                        aiConfidenceMessage = "AI identified with medium confidence - please verify"
+                    case "low":
+                        aiConfidenceMessage = "AI suggestion - please review and adjust as needed"
+                    default:
+                        aiConfidenceMessage = "AI suggestion applied"
+                    }
+
+                    // Add additional info to notes if provided
+                    if let info = result.additionalInfo, !info.isEmpty {
+                        notes = info
+                    }
+
+                    isIdentifyingFood = false
+                }
+            } catch {
+                await MainActor.run {
+                    identificationError = error.localizedDescription
+                    isIdentifyingFood = false
+                }
+            }
+        }
     }
 }
 
