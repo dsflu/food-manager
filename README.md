@@ -1,262 +1,182 @@
 # 🥬 FreshKeeper
 
-**A modern iOS app for smart food inventory management**
+> Never let food go to waste again! A beautiful iOS app for smart food inventory management with AI-powered dinner recommendations.
 
-Never forget what's in your fridge again! Track food items, manage quantities, set expiry dates, and reduce food waste with a beautiful, intuitive interface.
+![FreshKeeper App Screenshot](screenshots/app_screenshot.PNG)
 
 ![iOS](https://img.shields.io/badge/iOS-26.0+-blue.svg)
-![Swift](https://img.shields.io/badge/Swift-5.0-orange.svg)
+![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)
 ![SwiftUI](https://img.shields.io/badge/SwiftUI-✓-green.svg)
-![SwiftData](https://img.shields.io/badge/SwiftData-✓-green.svg)
+![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 
----
+## ✨ Features
 
-## ✨ Key Features
+### 👨‍🍳 AI Dinner Recommendations
+Get personalized dinner recipes based on your inventory! Prioritizes expiring items, suggests what to buy, and provides step-by-step cooking instructions with video tutorials
 
-### 📸 **Visual Inventory**
-- Capture photos of food items with camera or photo library
-- Beautiful card-based grid layout
-- Clear category icons when no photo is added
+![Dinner Recommendation](screenshots/dinner_recommendation.PNG)
 
-### 🏷️ **Smart Organization**
-- **Dynamic storage locations**: Default Fridge & Freezer + custom locations (extra fridges, freezers, pantry boxes)
-- **Custom categories**: 8 defaults + create your own with custom names and emojis
-- Filter by storage location with one tap
-- Search by food name instantly
+### 🤖 AI-Powered Food Recognition
+Take a photo and let AI identify the food and category automatically (OpenAI integration)
 
-### ⏰ **Expiry Tracking**
-- Set expiry/best-before dates with quick shortcuts (3d, 7d, 14d, 30d)
-- Color-coded warnings on every card:
-  - 🔴 **Red**: Expired
-  - 🟠 **Orange**: Expiring soon (within 3 days)
-  - 🔵 **Blue**: Good to go
-- "Expires tomorrow" smart text
+![Food Recognition](screenshots/food_recognition.PNG)
 
-### 📦 **Stock Management**
-- Add/update quantities with +/- buttons
-- Edit all details: name, category, location, expiry date
-- Auto-delete when quantity reaches 0
-- Real-time updates
+### 📸 Visual Inventory at a Glance
+Track your food with photos and see everything in a beautiful grid layout
 
-### 🎨 **Modern Design**
-- Clean, minimalist interface
-- Smooth animations and transitions
-- Dark, readable text (no white-on-white!)
-- SF Rounded fonts for friendly feel
-- Responsive touch interactions
+### ⏰ Smart Expiry Tracking
+Color-coded alerts show what's expiring soon - never waste food again
 
-### 🔒 **Privacy First**
-- All data stored locally on your device
-- No cloud sync, no tracking
-- Your food inventory is yours alone
+### 📍 Multiple Storage Locations
+Organize by Fridge, Freezer, Pantry, or create custom locations
 
----
+### 📚 Recipe Cookbook
+Save your favorite AI-generated recipes and browse them anytime
+
+### 📦 Quick Stock Management
+Direct quantity input for large numbers, auto-delete at zero
+
+### 🔍 Instant Search & Filters
+Find what you need in seconds with powerful filtering
+
+### 🔒 100% Private
+All data stays on your device - no cloud, no tracking
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **macOS** 14.0+
-- **Xcode** 15.0+ ([Free from App Store](https://apps.apple.com/app/xcode/id497799835))
-- **iPhone** with iOS 26.0+ OR use Simulator
-- **Apple ID** (free account, no paid developer membership needed)
+- macOS 14.0+ with [Xcode 15.0+](https://apps.apple.com/app/xcode/id497799835)
+- iPhone with iOS 26.0+ or Simulator
+- Free Apple ID (no paid developer account needed)
 
-### Installation (3 minutes)
+### Installation
 
-**1. Clone the repository**
+**1️⃣ Clone & Open**
 ```bash
-git clone https://github.com/YOUR_USERNAME/food-manager.git
+git clone https://github.com/dsflu/food-manager.git
 cd food-manager
-```
-
-**2. Open in Xcode**
-```bash
 open FreshKeeper/FreshKeeper.xcodeproj
 ```
 
-**3. Configure signing** (first time only)
-- Select the **FreshKeeper** target in Xcode
-- Go to **Signing & Capabilities** tab
-- Choose your **Team** (your Apple ID)
-- Xcode will automatically create a provisioning profile
+**2️⃣ Select Your Device**
+- In Xcode, choose your iPhone or a simulator from the device menu
+- If using your iPhone, connect it via USB and trust the computer
 
-**4. Run the app**
-- Select your iPhone or **"iPhone 16 Pro"** simulator
-- Press **⌘R** or click the ▶️ Run button
-- The app will build and launch!
-
-**First Launch:**
-- The app auto-creates default storage locations (Fridge, Freezer)
-- 8 default food categories are pre-loaded
-- You're ready to start adding food items!
-
----
+**3️⃣ Run the App**
+- Press **⌘R** or click the ▶️ button
+- First time? Xcode will automatically set up code signing
+- The app launches with default storage locations ready to use!
 
 ## 📱 How to Use
 
-### Adding Food Items
-1. Tap the **+** button in the top-right
-2. **Take a photo** or choose from library (optional)
-3. Enter **food name** (e.g., "Chicken Breast")
-4. Set **quantity** with +/- buttons
-5. Select **storage location** (Fridge, Freezer, or your custom locations)
-6. Choose **category** or create a custom one
-7. **Optional**: Set expiry date, add notes
-8. Tap **"Add to Inventory"**
+### Add Your First Item
+1. Tap the **+** button
+2. Snap a photo (optional)
+3. Use **"AI Identify"** to auto-detect food name and category
+4. Enter or adjust quantity (tap number for direct input)
+5. Set expiry date with quick shortcuts
+6. Tap "Add to Inventory"
 
-### Managing Storage Locations
-- Tap **grid icon** (top-left) to manage storage locations
-- Add custom locations: "Garage Freezer", "Pantry Box", etc.
-- Choose custom icons and colors
-- Edit or delete custom locations (defaults are protected)
+### AI Features (Optional)
+- Go to **Settings** (gear icon)
+- Add your OpenAI API key
+- Choose model: GPT-4.1 Nano (cheapest) or GPT-4o Mini (most accurate)
+- **Food Recognition**: Take photos and let AI identify foods automatically!
+- **Dinner Recommendations**: Tap the floating chef button (fork & knife icon) to get personalized recipes
 
-### Creating Custom Categories
-- When adding food, scroll categories and tap **"+ Add Custom"**
-- Enter category name (e.g., "Snacks", "Frozen Pizza")
-- Pick an emoji icon from 24 options
-- Your custom category is ready to use!
+### Get Dinner Recommendations
+1. Tap the floating **chef button** (fork & knife icon) in the bottom right
+2. Choose cuisine: Smart Choice, Chinese, or Western (French/Italian)
+3. AI generates a recipe using your expiring items intelligently
+4. See what you have vs. what to buy from the supermarket
+5. Follow step-by-step instructions (Chinese for Chinese dishes, English for Western)
+6. Watch video tutorials on Bilibili or YouTube
+7. Save favorites to your cookbook!
 
-### Updating Stock
-- Tap any food card to view details
-- Use **+/-** buttons to adjust quantity
-- Tap **pencil icon** in navigation bar to edit name
-- Tap any field with a pencil icon to edit (location, category, expiry)
+### Stay Organized
+- **Filter by location**: Tap "Fridge" or "Freezer" chips
+- **Search**: Pull down to reveal the search bar
+- **Update quantities**: Tap number for direct input or use +/- buttons
+- **Custom categories**: Create your own with emojis!
+- **Browse cookbook**: Access saved recipes from the dinner recommendations
 
-### Viewing Inventory
-- **Main screen**: See all items with photos, quantities, and expiry badges
-- **Filter**: Tap location chips (All, Fridge, Freezer, etc.)
-- **Search**: Pull down to reveal search bar
-- **Stats**: View total items and total stock at the top
+### Track Expiry Dates
+- 🔴 **Red badge** = Expired
+- 🟠 **Orange badge** = Expires within 3 days
+- 🔵 **Blue badge** = Fresh
 
----
+## 🏗️ Built With
 
-## 🏗️ Technical Stack
+- **SwiftUI** - Modern declarative UI
+- **SwiftData** - Efficient local persistence
+- **iOS 26+** - Latest Apple technologies
+- **100% Swift** - Type-safe and performant
 
-| Component | Technology |
-|-----------|-----------|
-| **Language** | Swift 5.0 |
-| **UI Framework** | SwiftUI (declarative UI) |
-| **Data Persistence** | SwiftData (iOS 26+) |
-| **Architecture** | MVVM pattern |
-| **Min iOS Version** | 26.0 |
-| **Camera** | UIImagePickerController |
-| **Photo Storage** | External storage attribute (efficient) |
+## 🧪 Testing Checklist
 
-### Project Structure
-```
-FreshKeeper/
-├── FreshKeeper.xcodeproj          # Xcode project (ready to open!)
-├── FreshKeeper/
-│   ├── FreshKeeperApp.swift      # App entry + data seeding
-│   ├── Models/
-│   │   └── FoodItem.swift        # Data models (FoodItem, StorageLocation, FoodCategory)
-│   ├── Views/
-│   │   ├── ContentView.swift     # Main inventory grid
-│   │   ├── AddFoodItemView.swift # Add/create new items
-│   │   ├── FoodItemDetailView.swift  # View/edit details
-│   │   ├── FoodItemCard.swift    # Card component
-│   │   └── StorageManagementView.swift  # Manage storage locations
-│   └── Utilities/
-│       └── CameraView.swift      # Camera integration
-└── Assets.xcassets                # App icon, images
-```
+Before shipping, test these key flows:
+- [ ] Add items with/without photos
+- [ ] Set different expiry dates
+- [ ] Update quantities to zero
+- [ ] Search and filter items
+- [ ] Create custom categories
+- [ ] Delete items
+- [ ] Generate dinner recommendations
+- [ ] Save recipes to cookbook
+- [ ] View recipes with different cuisines
+- [ ] Check shopping list for ingredients
 
----
+## ⚡ Performance Tips
 
-## 🎨 Design System
+### Debug vs Release Mode
+The app runs **10-50x slower** in Debug mode! For testing and demos, always use Release mode:
 
-### Color Palette
-| Color | Hex | Usage |
-|-------|-----|-------|
-| Fresh Green | `#4CAF50` | Primary actions, quantity |
-| Cool Blue | `#2196F3` | Info, links |
-| Urgent Orange | `#FF9800` | Expiring soon |
-| Alert Red | `#F44336` | Expired, delete |
-| Dark Text | `#1A1A1A` | Primary text |
-| Mid Grey | `#666666` | Labels, secondary text |
-| Light Grey | `#999999` | Placeholders, timestamps |
+1. In Xcode: **Product → Scheme → Edit Scheme**
+2. Select **Run** → **Build Configuration**
+3. Change from **Debug** to **Release**
+4. Press **⌘R** to rebuild
 
-### Typography
-- **Font**: SF Rounded (Apple's friendly system font)
-- **Weights**: Bold for headings, Semibold for labels, Medium for body
+### Quick Performance Wins
+- **Release mode**: Essential for real-world testing
+- **100+ items**: App handles large inventories smoothly
+- **Image optimization**: Photos auto-compressed to ~200KB
+- **Efficient scrolling**: LazyVGrid renders only visible items
 
-### UI Components
-- **Cards**: White background, 8pt shadow, 16pt radius
-- **Buttons**: Filled or outlined with brand colors
-- **Badges**: Pill-shaped with icon + text
-- **Animations**: Spring animations (0.3s response, 0.7 damping)
-
----
+For detailed performance optimization, see [PERFORMANCE.md](PERFORMANCE.md)
 
 ## 🐛 Troubleshooting
 
-### "Persistent store migration error"
-**Solution**: Delete the app from your device and reinstall (⌘R)
-- This happens after major database schema changes
-- One-time issue, creates fresh database with new schema
+| Issue | Solution |
+|-------|----------|
+| **"Persistent store migration error"** | Delete app and reinstall (happens after database updates) |
+| **Camera not working** | Grant permissions: Settings → FreshKeeper → Camera |
+| **App crashes on launch** | Clean build folder: Product → Clean Build Folder (⌘⇧K) |
 
-### App runs slow on device
-**Solution**: Build in **Release mode** (not Debug)
-- Debug builds are 10-50x slower
-- Product → Scheme → Edit Scheme → Run → Build Configuration → Release
+## 🤝 Contributing
 
-### "No such module 'SwiftData'"
-**Solution**: Check iOS deployment target
-- Select FreshKeeper target → General → Deployment Info
-- Ensure "Minimum Deployments" is iOS 26.0
-
-### Camera not working
-**Solution**: Grant camera permissions
-- iPhone Settings → FreshKeeper → Camera → Allow
-
-### Build failed after git pull
-**Solution**: Clean build folder
-- In Xcode: Product → Clean Build Folder (⌘⇧K)
-- Rebuild with ⌘R
-
----
-
-## 📚 Additional Resources
-
-- **[FEATURES.md](FEATURES.md)** - Detailed feature showcase with screenshots
-- **[PERFORMANCE.md](PERFORMANCE.md)** - Performance tips and optimization guide
-
----
-
-## 🤝 For Your Team
-
-### Development Setup
-Each team member should:
-1. Clone the repo
-2. Open `FreshKeeper/FreshKeeper.xcodeproj` in Xcode
-3. Select their Apple ID for code signing
-4. Run on their device or simulator
-
-### Testing Checklist
-- [ ] Add food item with photo
-- [ ] Add food item without photo
-- [ ] Create custom category
-- [ ] Create custom storage location
-- [ ] Set expiry dates (test 3d, 7d, custom)
-- [ ] Edit food name, category, location
-- [ ] Update quantities with +/-
-- [ ] Search and filter functionality
-- [ ] Delete items (reduce to 0, or delete button)
-- [ ] Check expiry badges on cards
-
----
-
-## 🙏 Credits
-
-Built with ❤️ for better food management and reduced food waste.
-
-**Technologies**: SwiftUI, SwiftData, UIKit (Camera), iOS 26
-
----
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
 ## 📄 License
 
-MIT License - Free to use, modify, and share!
+MIT License - see [LICENSE](LICENSE) file for details
+
+## 🙏 Acknowledgments
+
+Built with ❤️ to reduce food waste and save money. Special thanks to:
+- The SwiftUI team for the amazing framework
+- Our beta testers for valuable feedback
+- You, for helping reduce food waste!
 
 ---
 
-**Ready to track your food inventory like a pro?** Clone and run! 🎉
+**Ready to transform your food management?** Clone, build, and never waste food again! 🎉
+
+<p align="center">
+  <a href="https://github.com/dsflu/food-manager/issues">Report Bug</a>
+  ·
+  <a href="https://github.com/dsflu/food-manager/issues">Request Feature</a>
+</p>

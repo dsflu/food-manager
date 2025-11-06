@@ -120,12 +120,12 @@ private var storageLocations: [StorageLocation]
 ### iOS Version
 - **Minimum**: iOS 26.0
 - **Recommended**: Latest iOS 26.x
-- **SwiftData**: Requires iOS 17.0+ minimum
+- **SwiftData**: Built with iOS 26.0 SwiftData features
 
 ### Device Specs
 - **Works well on:** iPhone 11 and newer
 - **Optimal:** iPhone 13 and newer
-- **Simulator**: Use iPhone 15/16 Pro for realistic testing
+- **Simulator**: Use iPhone 16 Pro for realistic testing
 
 ---
 

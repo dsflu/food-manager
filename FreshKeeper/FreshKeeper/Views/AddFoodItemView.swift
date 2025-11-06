@@ -14,6 +14,8 @@ struct AddFoodItemView: View {
 
     @State private var name = ""
     @State private var quantity = 1
+    @State private var quantityText = "1"
+    @FocusState private var isEditingQuantity: Bool
     @State private var selectedLocation: StorageLocation?
     @State private var selectedCategory: FoodCategory?
     @State private var notes = ""
@@ -27,6 +29,14 @@ struct AddFoodItemView: View {
     @State private var showAddCategory = false
     @State private var customCategoryName = ""
     @State private var customCategoryIcon = "📦"
+
+    // AI Identification States
+    @State private var isIdentifyingFood = false
+    @State private var identificationError: String?
+    @State private var showAPIKeyAlert = false
+    @State private var aiConfidenceMessage: String?
+
+    private let openAIService = OpenAIService.shared
 
     var body: some View {
         NavigationStack {
@@ -77,6 +87,7 @@ struct AddFoodItemView: View {
                                     Button {
                                         if quantity > 1 {
                                             quantity -= 1
+                                            quantityText = "\(quantity)"
                                         }
                                     } label: {
                                         Image(systemName: "minus.circle.fill")
@@ -87,16 +98,50 @@ struct AddFoodItemView: View {
 
                                     Spacer()
 
-                                    Text("\(quantity)")
+                                    // Tap to edit quantity directly
+                                    TextField("", text: $quantityText)
                                         .font(.system(.title, design: .rounded))
                                         .fontWeight(.heavy)
                                         .foregroundColor(Color(hex: "1A1A1A"))
-                                        .frame(minWidth: 60)
+                                        .multilineTextAlignment(.center)
+                                        .frame(minWidth: 80)
+                                        .keyboardType(.numberPad)
+                                        .focused($isEditingQuantity)
+                                        .onChange(of: quantityText) { oldValue, newValue in
+                                            // Filter out non-numeric characters
+                                            let filtered = newValue.filter { $0.isNumber }
+                                            if filtered != newValue {
+                                                quantityText = filtered
+                                            }
+
+                                            // Update quantity if valid
+                                            if let newQuantity = Int(filtered), newQuantity > 0 {
+                                                quantity = newQuantity
+                                            } else if filtered.isEmpty {
+                                                // Keep the current quantity but allow empty text for typing
+                                            } else if filtered == "0" {
+                                                quantityText = "1"
+                                                quantity = 1
+                                            }
+                                        }
+                                        .onSubmit {
+                                            // Ensure valid quantity on submit
+                                            if quantityText.isEmpty || quantity == 0 {
+                                                quantity = 1
+                                                quantityText = "1"
+                                            }
+                                            isEditingQuantity = false
+                                        }
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(isEditingQuantity ? Color(hex: "4CAF50") : Color.clear, lineWidth: 2)
+                                        )
 
                                     Spacer()
 
                                     Button {
                                         quantity += 1
+                                        quantityText = "\(quantity)"
                                     } label: {
                                         Image(systemName: "plus.circle.fill")
                                             .font(.title2)
@@ -315,6 +360,26 @@ struct AddFoodItemView: View {
                         dismiss()
                     }
                 }
+
+                // Add Done button for keyboard when editing quantity
+                ToolbarItem(placement: .keyboard) {
+                    if isEditingQuantity {
+                        HStack {
+                            Spacer()
+                            Button("Done") {
+                                isEditingQuantity = false
+                                // Ensure valid quantity
+                                if quantityText.isEmpty || quantity == 0 {
+                                    quantity = 1
+                                    quantityText = "1"
+                                }
+                            }
+                            .font(.system(.body, design: .rounded))
+                            .fontWeight(.semibold)
+                            .foregroundColor(Color(hex: "4CAF50"))
+                        }
+                    }
+                }
             }
             .sheet(isPresented: $showCamera) {
                 CameraView(image: $capturedImage)
@@ -364,6 +429,15 @@ struct AddFoodItemView: View {
                 if selectedCategory == nil && !foodCategories.isEmpty {
                     selectedCategory = foodCategories.first(where: { $0.name == "Other" }) ?? foodCategories.first
                 }
+            }
+            .alert("API Key Required", isPresented: $showAPIKeyAlert) {
+                Button("Go to Settings") {
+                    // In a real app, you'd navigate to settings here
+                    // For now, we'll just dismiss
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: {
+                Text("Please configure your OpenAI API key in Settings to use AI food identification.")
             }
         }
     }
@@ -435,13 +509,81 @@ struct AddFoodItemView: View {
             }
 
             if capturedImage != nil {
-                Button {
-                    showImageOptions = true
-                } label: {
-                    Label("Change Photo", systemImage: "arrow.triangle.2.circlepath")
-                        .font(.subheadline)
-                        .foregroundColor(Color(hex: "2196F3"))
+                HStack(spacing: 12) {
+                    Button {
+                        showImageOptions = true
+                    } label: {
+                        Label("Change Photo", systemImage: "arrow.triangle.2.circlepath")
+                            .font(.subheadline)
+                            .foregroundColor(Color(hex: "2196F3"))
+                    }
+
+                    // AI Identification Button
+                    Button {
+                        if !openAIService.hasAPIKey {
+                            showAPIKeyAlert = true
+                        } else {
+                            identifyFoodWithAI()
+                        }
+                    } label: {
+                        HStack {
+                            if isIdentifyingFood {
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                                    .tint(.white)
+                            } else {
+                                Image(systemName: "wand.and.stars")
+                            }
+                            Text(isIdentifyingFood ? "Identifying..." : "AI Identify")
+                                .font(.system(.subheadline, design: .rounded))
+                                .fontWeight(.semibold)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "9C27B0"), Color(hex: "7B1FA2")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(20)
+                        .opacity(isIdentifyingFood ? 0.7 : 1.0)
+                    }
+                    .disabled(isIdentifyingFood)
                 }
+            }
+
+            // AI Confidence/Error Message
+            if let confidenceMessage = aiConfidenceMessage {
+                HStack {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundColor(Color(hex: "4CAF50"))
+                    Text(confidenceMessage)
+                        .font(.system(.caption, design: .rounded))
+                        .fontWeight(.medium)
+                        .foregroundColor(Color(hex: "666666"))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color(hex: "E8F5E9"))
+                .cornerRadius(8)
+            }
+
+            if let error = identificationError {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(Color(hex: "FF5722"))
+                    Text(error)
+                        .font(.system(.caption, design: .rounded))
+                        .fontWeight(.medium)
+                        .foregroundColor(Color(hex: "666666"))
+                }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(Color(hex: "FFEBEE"))
+                .cornerRadius(8)
             }
         }
     }
@@ -464,6 +606,57 @@ struct AddFoodItemView: View {
 
         modelContext.insert(item)
         dismiss()
+    }
+
+    private func identifyFoodWithAI() {
+        guard let image = capturedImage else { return }
+
+        isIdentifyingFood = true
+        identificationError = nil
+        aiConfidenceMessage = nil
+
+        Task {
+            do {
+                let result = try await openAIService.identifyFood(from: image)
+
+                // Run UI updates on main thread
+                await MainActor.run {
+                    // Set the food name
+                    name = result.foodName
+
+                    // Find and select the matching category
+                    if let matchingCategory = foodCategories.first(where: {
+                        $0.name.lowercased() == result.category.lowercased()
+                    }) {
+                        selectedCategory = matchingCategory
+                    }
+
+                    // Set confidence message
+                    switch result.confidence.lowercased() {
+                    case "high":
+                        aiConfidenceMessage = "AI identified with high confidence"
+                    case "medium":
+                        aiConfidenceMessage = "AI identified with medium confidence - please verify"
+                    case "low":
+                        aiConfidenceMessage = "AI suggestion - please review and adjust as needed"
+                    default:
+                        aiConfidenceMessage = "AI suggestion applied"
+                    }
+
+                    // Add additional info to notes if provided
+                    if let info = result.additionalInfo, !info.isEmpty {
+                        notes = info
+                    }
+
+                    isIdentifyingFood = false
+                }
+            } catch {
+                await MainActor.run {
+                    identificationError = error.localizedDescription
+                    isIdentifyingFood = false
+                }
+            }
+        }
     }
 }
 
