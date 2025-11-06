@@ -6,6 +6,52 @@
 import Foundation
 import SwiftData
 
+// MARK: - Recipe Model
+@Model
+final class Recipe {
+    var id: UUID
+    var dishName: String
+    var cuisine: String
+    var ingredients: Data // JSON encoded array of ingredients
+    var recipe: Data // JSON encoded array of steps
+    var cookingTime: String
+    var difficulty: String
+    var videoSearchChinese: String?
+    var videoSearchEnglish: String?
+    var videoLink: String?
+    var reason: String
+    var dateCreated: Date
+    var isFavorite: Bool
+
+    init(
+        dishName: String,
+        cuisine: String,
+        ingredients: Data,
+        recipe: Data,
+        cookingTime: String,
+        difficulty: String,
+        videoSearchChinese: String? = nil,
+        videoSearchEnglish: String? = nil,
+        videoLink: String? = nil,
+        reason: String,
+        isFavorite: Bool = false
+    ) {
+        self.id = UUID()
+        self.dishName = dishName
+        self.cuisine = cuisine
+        self.ingredients = ingredients
+        self.recipe = recipe
+        self.cookingTime = cookingTime
+        self.difficulty = difficulty
+        self.videoSearchChinese = videoSearchChinese
+        self.videoSearchEnglish = videoSearchEnglish
+        self.videoLink = videoLink
+        self.reason = reason
+        self.dateCreated = Date()
+        self.isFavorite = isFavorite
+    }
+}
+
 @Model
 final class StorageLocation {
     var id: UUID

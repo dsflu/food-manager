@@ -110,6 +110,11 @@ class OpenAIService {
 
     private init() {}
 
+    /// Check if we have a valid API configuration
+    var hasValidConfiguration: Bool {
+        return getAPIKey() != nil
+    }
+
     // MARK: - API Key Management
 
     /// Securely stores the API key in iOS Keychain
@@ -499,6 +504,85 @@ class OpenAIService {
 
         return resizedImage
     }
+
+    /// Sends a text-only request to OpenAI for reasoning tasks
+    func sendTextRequest(prompt: String) async throws -> String {
+        guard let apiKey = getAPIKey() else {
+            throw OpenAIError.noAPIKey
+        }
+
+        // Use the reasoning model (or vision model as fallback since they're the same for now)
+        let selectedModel = getSelectedModel(for: .reasoning)
+
+        guard let url = URL(string: "https://api.openai.com/v1/chat/completions") else {
+            throw OpenAIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.addValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        // Build request body with system message to enable web search
+        var requestBody: [String: Any] = [
+            "model": selectedModel,
+            "messages": [
+                [
+                    "role": "system",
+                    "content": "You have the ability to search the internet for current information. When asked to create recipes or recommendations, actively search for authentic, current recipes and cooking techniques from reputable sources."
+                ],
+                [
+                    "role": "user",
+                    "content": prompt
+                ]
+            ]
+        ]
+
+        // Add appropriate token limit based on model
+        if selectedModel.contains("gpt-5") {
+            requestBody["max_completion_tokens"] = 2000
+        } else {
+            requestBody["max_tokens"] = 2000
+        }
+
+        // Don't set temperature for GPT-5 models (they only support default)
+        if !selectedModel.contains("gpt-5") {
+            requestBody["temperature"] = 0.7
+        }
+
+        do {
+            request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
+        } catch {
+            throw OpenAIError.invalidRequest
+        }
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw OpenAIError.invalidResponse
+        }
+
+        if httpResponse.statusCode != 200 {
+            if let errorData = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                print("API Error Response: \(errorData)")
+                if let error = errorData["error"] as? [String: Any],
+                   let message = error["message"] as? String {
+                    throw OpenAIError.apiError(message)
+                }
+            }
+            throw OpenAIError.apiError("Request failed with status code: \(httpResponse.statusCode)")
+        }
+
+        guard let jsonResponse = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let choices = jsonResponse["choices"] as? [[String: Any]],
+              let firstChoice = choices.first,
+              let message = firstChoice["message"] as? [String: Any],
+              let content = message["content"] as? String else {
+            throw OpenAIError.invalidResponse
+        }
+
+        return content
+    }
 }
 
 // MARK: - Error Types
@@ -507,6 +591,9 @@ enum OpenAIError: LocalizedError {
     case invalidAPIKey
     case imageTooLarge
     case invalidResponse
+    case invalidRequest
+    case invalidURL
+    case apiError(String)
     case noContent
     case requestFailed(statusCode: Int)
 
@@ -520,6 +607,12 @@ enum OpenAIError: LocalizedError {
             return "Image is too large. Please try with a smaller image."
         case .invalidResponse:
             return "Invalid response from OpenAI API."
+        case .invalidRequest:
+            return "Invalid request format."
+        case .invalidURL:
+            return "Invalid API URL."
+        case .apiError(let message):
+            return "API Error: \(message)"
         case .noContent:
             return "No content in response from OpenAI API."
         case .requestFailed(let statusCode):

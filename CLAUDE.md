@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-FreshKeeper is a SwiftUI iOS app for food inventory management using SwiftData persistence. The app tracks food items with photos, quantities, expiry dates, and storage locations. iOS 26.0+ required.
+FreshKeeper is a SwiftUI iOS app for food inventory management using SwiftData persistence. The app tracks food items with photos, quantities, expiry dates, and storage locations, and provides AI-powered dinner recommendations based on inventory. iOS 26.0+ required.
 
 ## Build & Run Commands
 
@@ -35,9 +35,10 @@ xcodebuild clean -project FreshKeeper/FreshKeeper.xcodeproj
 
 ### Core Architecture Pattern
 MVVM with SwiftData reactive bindings:
-- **Models**: `FoodItem`, `StorageLocation`, `FoodCategory` with `@Model` macro
+- **Models**: `FoodItem`, `StorageLocation`, `FoodCategory`, `Recipe` with `@Model` macro
 - **Views**: SwiftUI declarative views with `@Query` for automatic data observation
 - **Persistence**: SwiftData with external storage for images
+- **Services**: `OpenAIService` for AI-powered features (food recognition, dinner recommendations)
 
 ### Data Model Relationships
 ```
@@ -59,6 +60,9 @@ ContentView (main grid)
 │   └── NavigationLink → FoodItemDetailView (sheet)
 ├── Sheet: AddFoodItemView (with nested AddCustomCategorySheet)
 ├── Sheet: StorageManagementView
+├── Sheet: DinnerRecommendationView
+│   └── Sheet: CookbookView (saved recipes)
+├── Floating Action Button: Chef button for dinner recommendations
 └── Filtering: location chips, category selector, search, status filter
 ```
 
@@ -102,14 +106,18 @@ These drive color-coded badges (red=expired, orange=expiring, blue=fresh).
 - **FilterChip**: Selectable chip for location/category filtering
 - **EditableDetailRow**: Info row with pencil icon for inline editing
 - **Direct Quantity Input**: TextField with numeric keyboard for large numbers (tap to edit)
+- **DinnerRecommendationView**: AI-powered recipe generation with cuisine selection
+- **CookbookView**: Browse and manage saved recipes with favorites
 
 ### OpenAI Integration (Services/OpenAIService.swift)
 - **API Key Storage**: Secure storage in iOS Keychain (never hardcoded)
 - **Food Recognition**: Vision API identifies food from photos
+- **Dinner Recommendations**: Text API generates recipes based on inventory
 - **Model Selection**: GPT-4.1-nano (cheap) or GPT-4o-mini (accurate)
 - **Image Optimization**: Auto-resize to 1024x1024, JPEG compression
 - **Categories**: Meat, Vegetables, Fruits, Dairy, Bread, Beverages, Prepared Meals, Other
 - **Settings View**: Configure API key and model preferences
+- **Internet Search**: AI searches web for current, authentic recipes
 
 ### Performance Optimizations
 - LazyVGrid for efficient scrolling with 100+ items
@@ -172,8 +180,23 @@ Manual testing focus areas:
 - All filter combinations
 - Performance with 100+ items
 - Schema migration after model changes
+- Dinner recommendation generation (all cuisine types)
+- Recipe saving to cookbook and favorites
+- Shopping list for missing ingredients
+- Video tutorial links (Bilibili and YouTube)
+- Recipe language (Chinese for Chinese cuisine, English for Western)
 
 ## Recent Improvements
+
+### AI Dinner Recommendations
+- **Smart Recipe Generation**: Creates personalized dinner recipes based on inventory
+- **Expiry Priority**: Intelligently uses expiring items where appropriate
+- **Shopping List**: Shows what you have vs. what to buy from supermarket
+- **Cuisine Selection**: Smart Choice, Chinese (multiple regional styles), or Western (French/Italian)
+- **Language Support**: Chinese recipes in Chinese, Western recipes in English
+- **Video Tutorials**: Links to Bilibili (Chinese search) and YouTube
+- **Recipe Cookbook**: Save favorites and browse recent recipes (max 5 recent)
+- **Internet Search**: AI searches web for authentic, current recipes
 
 ### OpenAI Integration
 - Added AI-powered food recognition using GPT-4 vision models

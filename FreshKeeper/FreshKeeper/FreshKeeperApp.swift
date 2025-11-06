@@ -42,7 +42,8 @@ struct FreshKeeperApp: App {
         let schema = Schema([
             FoodItem.self,
             StorageLocation.self,
-            FoodCategory.self
+            FoodCategory.self,
+            Recipe.self
         ])
 
         // Use lightweight migration for schema changes

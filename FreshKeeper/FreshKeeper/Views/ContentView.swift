@@ -20,6 +20,7 @@ struct ContentView: View {
     @State private var showingAddItem = false
     @State private var showingManageStorage = false
     @State private var showingSettings = false
+    @State private var showingDinnerRecommendation = false
     @State private var selectedLocation: StorageLocation?
     @State private var selectedCategory: FoodCategory?
     @State private var selectedFilter: ItemFilter = .all
@@ -27,6 +28,7 @@ struct ContentView: View {
     @State private var showFilters = false
     @State private var scrollOffset: CGFloat = 0
     @State private var showSmallTitle = false
+    @State private var chefButtonScale: CGFloat = 1.0
 
     var filteredItems: [FoodItem] {
         var items = foodItems
@@ -128,6 +130,38 @@ struct ContentView: View {
                     }
                 }
                 .coordinateSpace(name: "scroll")
+
+                // Floating Action Button for Dinner Recommendation
+                VStack {
+                    Spacer()
+                    HStack {
+                        Spacer()
+                        Button {
+                            showingDinnerRecommendation = true
+                        } label: {
+                            ZStack {
+                                // Background circle with gradient
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color(hex: "FF6B6B"), Color(hex: "FF8E53")],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 56, height: 56)
+
+                                // Classic fork and knife icon - clear and elegant
+                                Image(systemName: "fork.knife")
+                                    .font(.system(size: 24, weight: .semibold))
+                                    .foregroundColor(.white)
+                            }
+                            .shadow(color: Color(hex: "FF6B6B").opacity(0.3), radius: 8, x: 0, y: 4)
+                        }
+                        .padding(.trailing, 16)
+                        .padding(.bottom, 20)
+                    }
+                }
             }
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Search food items...")
@@ -200,6 +234,9 @@ struct ContentView: View {
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
+            }
+            .sheet(isPresented: $showingDinnerRecommendation) {
+                DinnerRecommendationView()
             }
         }
     }

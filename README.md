@@ -1,8 +1,8 @@
 # 🥬 FreshKeeper
 
-> Never let food go to waste again! A beautiful iOS app for smart food inventory management.
+> Never let food go to waste again! A beautiful iOS app for smart food inventory management with AI-powered dinner recommendations.
 
-![FreshKeeper App Screenshot](screenshots/app_screenshot.png)
+![FreshKeeper App Screenshot](screenshots/app_screenshot.PNG)
 
 ![iOS](https://img.shields.io/badge/iOS-26.0+-blue.svg)
 ![Swift](https://img.shields.io/badge/Swift-5.9-orange.svg)
@@ -11,8 +11,15 @@
 
 ## ✨ Features
 
+### 👨‍🍳 AI Dinner Recommendations
+Get personalized dinner recipes based on your inventory! Prioritizes expiring items, suggests what to buy, and provides step-by-step cooking instructions with video tutorials
+
+![Dinner Recommendation](screenshots/dinner_recommendation.PNG)
+
 ### 🤖 AI-Powered Food Recognition
 Take a photo and let AI identify the food and category automatically (OpenAI integration)
+
+![Food Recognition](screenshots/food_recognition.PNG)
 
 ### 📸 Visual Inventory at a Glance
 Track your food with photos and see everything in a beautiful grid layout
@@ -22,6 +29,9 @@ Color-coded alerts show what's expiring soon - never waste food again
 
 ### 📍 Multiple Storage Locations
 Organize by Fridge, Freezer, Pantry, or create custom locations
+
+### 📚 Recipe Cookbook
+Save your favorite AI-generated recipes and browse them anytime
 
 ### 📦 Quick Stock Management
 Direct quantity input for large numbers, auto-delete at zero
@@ -67,17 +77,28 @@ open FreshKeeper/FreshKeeper.xcodeproj
 5. Set expiry date with quick shortcuts
 6. Tap "Add to Inventory"
 
-### AI Food Recognition (Optional)
+### AI Features (Optional)
 - Go to **Settings** (gear icon)
 - Add your OpenAI API key
 - Choose model: GPT-4.1 Nano (cheapest) or GPT-4o Mini (most accurate)
-- Take photos and let AI identify foods automatically!
+- **Food Recognition**: Take photos and let AI identify foods automatically!
+- **Dinner Recommendations**: Tap the floating chef button (fork & knife icon) to get personalized recipes
+
+### Get Dinner Recommendations
+1. Tap the floating **chef button** (fork & knife icon) in the bottom right
+2. Choose cuisine: Smart Choice, Chinese, or Western (French/Italian)
+3. AI generates a recipe using your expiring items intelligently
+4. See what you have vs. what to buy from the supermarket
+5. Follow step-by-step instructions (Chinese for Chinese dishes, English for Western)
+6. Watch video tutorials on Bilibili or YouTube
+7. Save favorites to your cookbook!
 
 ### Stay Organized
 - **Filter by location**: Tap "Fridge" or "Freezer" chips
 - **Search**: Pull down to reveal the search bar
 - **Update quantities**: Tap number for direct input or use +/- buttons
 - **Custom categories**: Create your own with emojis!
+- **Browse cookbook**: Access saved recipes from the dinner recommendations
 
 ### Track Expiry Dates
 - 🔴 **Red badge** = Expired
@@ -100,6 +121,10 @@ Before shipping, test these key flows:
 - [ ] Search and filter items
 - [ ] Create custom categories
 - [ ] Delete items
+- [ ] Generate dinner recommendations
+- [ ] Save recipes to cookbook
+- [ ] View recipes with different cuisines
+- [ ] Check shopping list for ingredients
 
 ## ⚡ Performance Tips
 
