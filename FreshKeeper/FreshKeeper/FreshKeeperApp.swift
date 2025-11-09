@@ -22,13 +22,13 @@ struct FreshKeeperApp: App {
 
         // LARGE TITLE - BLACK TEXT
         appearance.largeTitleTextAttributes = [
-            .foregroundColor: UIColor.black,
+            .foregroundColor: UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0),
             .font: UIFont.systemFont(ofSize: 34, weight: .bold)
         ]
 
         // SMALL TITLE - BLACK TEXT
         appearance.titleTextAttributes = [
-            .foregroundColor: UIColor.black,
+            .foregroundColor: UIColor(red: 0.0, green: 0.0, blue: 0.0, alpha: 1.0),
             .font: UIFont.systemFont(ofSize: 17, weight: .semibold)
         ]
 
@@ -101,7 +101,7 @@ struct FreshKeeperApp: App {
 
 // Color extension for hex colors - shared across all views
 extension Color {
-    init(hex: String) {
+    init(hex: String, opacity: Double = 1.0) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
 
@@ -109,44 +109,40 @@ extension Color {
         let scanner = Scanner(string: hex)
         let scanSuccess = scanner.scanHexInt64(&int)
 
-        // If scan failed or hex is empty, default to clear/white
+        // If scan failed or hex is empty, default to white
         guard scanSuccess, !hex.isEmpty else {
-            self.init(.sRGB, red: 1.0, green: 1.0, blue: 1.0, opacity: 1.0)
+            self.init(.sRGB, red: 1.0, green: 1.0, blue: 1.0, opacity: opacity)
             return
         }
 
-        let a, r, g, b: Double
+        let r, g, b: Double
 
         switch hex.count {
         case 3: // RGB (12-bit)
-            a = 1.0
             r = Double((int >> 8) * 17) / 255.0
             g = Double((int >> 4 & 0xF) * 17) / 255.0
             b = Double((int & 0xF) * 17) / 255.0
         case 6: // RGB (24-bit)
-            a = 1.0
             r = Double((int >> 16) & 0xFF) / 255.0
             g = Double((int >> 8) & 0xFF) / 255.0
             b = Double(int & 0xFF) / 255.0
-        case 8: // ARGB (32-bit)
-            a = Double((int >> 24) & 0xFF) / 255.0
+        case 8: // ARGB (32-bit) - extract alpha but use opacity parameter instead
             r = Double((int >> 16) & 0xFF) / 255.0
             g = Double((int >> 8) & 0xFF) / 255.0
             b = Double(int & 0xFF) / 255.0
         default:
             // Default to white for invalid hex strings
-            self.init(.sRGB, red: 1.0, green: 1.0, blue: 1.0, opacity: 1.0)
+            self.init(.sRGB, red: 1.0, green: 1.0, blue: 1.0, opacity: opacity)
             return
         }
 
-        // Ensure all values are strictly clamped between 0.0 and 1.0
-        // Use explicit sRGB colorspace to avoid UIColor conversion issues
-        self.init(
-            .sRGB,
-            red: max(0.0, min(1.0, r)),
-            green: max(0.0, min(1.0, g)),
-            blue: max(0.0, min(1.0, b)),
-            opacity: max(0.0, min(1.0, a))
-        )
+        // Clamp values to valid range [0, 1]
+        let clampedR = max(0.0, min(1.0, r))
+        let clampedG = max(0.0, min(1.0, g))
+        let clampedB = max(0.0, min(1.0, b))
+        let clampedOpacity = max(0.0, min(1.0, opacity))
+
+        // Use sRGB color space directly
+        self.init(.sRGB, red: clampedR, green: clampedG, blue: clampedB, opacity: clampedOpacity)
     }
 }

@@ -38,7 +38,7 @@ struct OrganizationView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(selectedTab == 0 ? Color(hex: "E3F2FD") : Color.clear)
+                            .background(selectedTab == 0 ? Color(hex: "E3F2FD") : Color(hex: "FFFFFF", opacity: 0.0))
                             .cornerRadius(12)
                         }
 
@@ -60,14 +60,14 @@ struct OrganizationView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
-                            .background(selectedTab == 1 ? Color(hex: "E8F5E9") : Color.clear)
+                            .background(selectedTab == 1 ? Color(hex: "E8F5E9") : Color(hex: "FFFFFF", opacity: 0.0))
                             .cornerRadius(12)
                         }
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 8)
                     .background(Color.white)
-                    .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 2)
+                    .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.05), radius: 2, x: 0, y: 2)
 
                     // Tab Content
                     TabView(selection: $selectedTab) {
@@ -130,7 +130,7 @@ struct StorageLocationsTab: View {
                                 .background(editMode == .active ? Color(hex: "2196F3") : Color(hex: "E3F2FD"))
                                 .foregroundColor(editMode == .active ? .white : Color(hex: "2196F3"))
                                 .cornerRadius(20)
-                                .shadow(color: Color(hex: "2196F3").opacity(editMode == .active ? 0.3 : 0), radius: 4, x: 0, y: 2)
+                                .shadow(color: Color(hex: "2196F3", opacity: editMode == .active ? 0.3 : 0), radius: 4, x: 0, y: 2)
                             }
                         }
 
@@ -149,22 +149,16 @@ struct StorageLocationsTab: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
-                            .background(
-                                LinearGradient(
-                                    colors: [Color(hex: "4CAF50"), Color(hex: "45A049")],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                            .background(Color(hex: "4CAF50"))
                             .foregroundColor(.white)
                             .cornerRadius(20)
-                            .shadow(color: Color(hex: "4CAF50").opacity(0.3), radius: 4, x: 0, y: 2)
+                            .shadow(color: Color(hex: "4CAF50", opacity: 0.3), radius: 4, x: 0, y: 2)
                         }
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 12)
                     .background(Color.white)
-                    .shadow(color: .black.opacity(0.03), radius: 1, x: 0, y: 1)
+                    .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.03), radius: 1, x: 0, y: 1)
 
                     // Storage Locations List
                     List {
@@ -178,7 +172,7 @@ struct StorageLocationsTab: View {
                                     deleteLocation(location)
                                 }
                             )
-                            .listRowBackground(Color.clear)
+                            .listRowBackground(Color(hex: "FFFFFF", opacity: 0.0))
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         }
@@ -231,13 +225,7 @@ struct StorageLocationsTab: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
-                        .background(
-                            LinearGradient(
-                                colors: [Color(hex: "2196F3"), Color(hex: "1976D2")],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .background(Color(hex: "2196F3"))
                         .cornerRadius(12)
                 }
 
@@ -319,7 +307,7 @@ struct CategoriesTab: View {
                                 .background(editMode == .active ? Color(hex: "4CAF50") : Color(hex: "E8F5E9"))
                                 .foregroundColor(editMode == .active ? .white : Color(hex: "4CAF50"))
                                 .cornerRadius(20)
-                                .shadow(color: Color(hex: "4CAF50").opacity(editMode == .active ? 0.3 : 0), radius: 4, x: 0, y: 2)
+                                .shadow(color: Color(hex: "4CAF50", opacity: editMode == .active ? 0.3 : 0), radius: 4, x: 0, y: 2)
                             }
                         }
 
@@ -338,22 +326,16 @@ struct CategoriesTab: View {
                             }
                             .padding(.horizontal, 16)
                             .padding(.vertical, 8)
-                            .background(
-                                LinearGradient(
-                                    colors: [Color(hex: "4CAF50"), Color(hex: "45A049")],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                            .background(Color(hex: "4CAF50"))
                             .foregroundColor(.white)
                             .cornerRadius(20)
-                            .shadow(color: Color(hex: "4CAF50").opacity(0.3), radius: 4, x: 0, y: 2)
+                            .shadow(color: Color(hex: "4CAF50", opacity: 0.3), radius: 4, x: 0, y: 2)
                         }
                     }
                     .padding(.horizontal)
                     .padding(.vertical, 12)
                     .background(Color.white)
-                    .shadow(color: .black.opacity(0.03), radius: 1, x: 0, y: 1)
+                    .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.03), radius: 1, x: 0, y: 1)
 
                     // Categories List
                     List {
@@ -367,7 +349,7 @@ struct CategoriesTab: View {
                                     deleteCategory(category)
                                 }
                             )
-                            .listRowBackground(Color.clear)
+                            .listRowBackground(Color(hex: "FFFFFF", opacity: 0.0))
                             .listRowSeparator(.hidden)
                             .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
                         }
@@ -420,13 +402,7 @@ struct CategoriesTab: View {
                         .foregroundColor(.white)
                         .padding(.horizontal, 24)
                         .padding(.vertical, 12)
-                        .background(
-                            LinearGradient(
-                                colors: [Color(hex: "2196F3"), Color(hex: "1976D2")],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .background(Color(hex: "2196F3"))
                         .cornerRadius(12)
                 }
 

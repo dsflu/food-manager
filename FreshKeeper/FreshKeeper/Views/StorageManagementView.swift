@@ -192,7 +192,7 @@ struct StorageLocationRow: View {
             // Icon
             ZStack {
                 Circle()
-                    .fill(Color(hex: location.colorHex).opacity(0.2))
+                    .fill(Color(hex: location.colorHex, opacity: 0.2))
                     .frame(width: 50, height: 50)
 
                 Image(systemName: location.icon)
@@ -252,7 +252,7 @@ struct StorageLocationRow: View {
         .padding()
         .background(Color.white)
         .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.05), radius: 5, x: 0, y: 2)
         .confirmationDialog(
             "Delete \(location.name)?",
             isPresented: $showDeleteConfirmation,
