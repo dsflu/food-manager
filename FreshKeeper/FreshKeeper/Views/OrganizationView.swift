@@ -216,22 +216,53 @@ struct StorageLocationsTab: View {
                 .fontWeight(.bold)
                 .foregroundColor(Color(hex: "1A1A1A"))
 
-            Text("Add your first storage location")
+            Text("Start with default locations or create your own")
                 .font(.system(.body, design: .rounded))
                 .foregroundColor(Color(hex: "666666"))
+                .multilineTextAlignment(.center)
 
-            Button {
-                showingAddLocation = true
-            } label: {
-                Label("Add Location", systemImage: "plus.circle.fill")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Color(hex: "4CAF50"))
-                    .cornerRadius(12)
+            VStack(spacing: 12) {
+                // Initialize with defaults button
+                Button {
+                    initializeDefaultLocations()
+                } label: {
+                    Label("Initialize Fridge & Freezer", systemImage: "sparkles")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "2196F3"), Color(hex: "1976D2")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(12)
+                }
+
+                // Or add custom location
+                Button {
+                    showingAddLocation = true
+                } label: {
+                    Label("Add Custom Location", systemImage: "plus.circle.fill")
+                        .font(.headline)
+                        .foregroundColor(Color(hex: "4CAF50"))
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color(hex: "E8F5E9"))
+                        .cornerRadius(12)
+                }
             }
         }
+    }
+
+    private func initializeDefaultLocations() {
+        let defaultLocations = StorageLocation.createDefaults()
+        for location in defaultLocations {
+            modelContext.insert(location)
+        }
+        try? modelContext.save()
     }
 
     private func deleteLocation(_ location: StorageLocation) {
@@ -374,22 +405,53 @@ struct CategoriesTab: View {
                 .fontWeight(.bold)
                 .foregroundColor(Color(hex: "1A1A1A"))
 
-            Text("Add your first category")
+            Text("Start fresh with default categories or create your own")
                 .font(.system(.body, design: .rounded))
                 .foregroundColor(Color(hex: "666666"))
+                .multilineTextAlignment(.center)
 
-            Button {
-                showingAddCategory = true
-            } label: {
-                Label("Add Category", systemImage: "plus.circle.fill")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 24)
-                    .padding(.vertical, 12)
-                    .background(Color(hex: "4CAF50"))
-                    .cornerRadius(12)
+            VStack(spacing: 12) {
+                // Initialize with defaults button
+                Button {
+                    initializeDefaultCategories()
+                } label: {
+                    Label("Initialize Default Categories", systemImage: "sparkles")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(
+                            LinearGradient(
+                                colors: [Color(hex: "2196F3"), Color(hex: "1976D2")],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .cornerRadius(12)
+                }
+
+                // Or add custom category
+                Button {
+                    showingAddCategory = true
+                } label: {
+                    Label("Add Custom Category", systemImage: "plus.circle.fill")
+                        .font(.headline)
+                        .foregroundColor(Color(hex: "4CAF50"))
+                        .padding(.horizontal, 24)
+                        .padding(.vertical, 12)
+                        .background(Color(hex: "E8F5E9"))
+                        .cornerRadius(12)
+                }
             }
         }
+    }
+
+    private func initializeDefaultCategories() {
+        let defaultCategories = FoodCategory.createDefaults()
+        for category in defaultCategories {
+            modelContext.insert(category)
+        }
+        try? modelContext.save()
     }
 
     private func deleteCategory(_ category: FoodCategory) {

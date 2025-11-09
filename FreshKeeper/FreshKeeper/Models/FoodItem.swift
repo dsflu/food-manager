@@ -104,16 +104,22 @@ final class FoodCategory {
     // Default categories - keep it minimal and simple
     static func createDefaults() -> [FoodCategory] {
         return [
-            // Core essentials only - users can add more as needed
+            // Fresh ingredients
             FoodCategory(name: "Vegetables", icon: "🥬", sortOrder: 0, isDefault: true),
             FoodCategory(name: "Meat", icon: "🥩", sortOrder: 1, isDefault: true),
             FoodCategory(name: "Fruits", icon: "🍎", sortOrder: 2, isDefault: true),
             FoodCategory(name: "Dairy & Eggs", icon: "🥛", sortOrder: 3, isDefault: true),
-            FoodCategory(name: "Pantry", icon: "🥫", sortOrder: 4, isDefault: true),  // Rice, noodles, sauces, oil
-            FoodCategory(name: "Frozen", icon: "🧊", sortOrder: 5, isDefault: true),
-            FoodCategory(name: "Snacks", icon: "🍿", sortOrder: 6, isDefault: true),
-            FoodCategory(name: "Beverages", icon: "🧃", sortOrder: 7, isDefault: true),
-            FoodCategory(name: "Other", icon: "📦", sortOrder: 8, isDefault: true)
+
+            // Cooking essentials & pantry
+            FoodCategory(name: "Seasonings & Sauces", icon: "🧂", sortOrder: 4, isDefault: true),  // Soy sauce, oil, garlic, ginger, spices
+            FoodCategory(name: "Grains & Pasta", icon: "🍚", sortOrder: 5, isDefault: true),  // Rice, noodles, pasta, flour
+            FoodCategory(name: "Canned & Packaged", icon: "🥫", sortOrder: 6, isDefault: true),  // Canned goods, jarred items, packaged foods
+
+            // Other
+            FoodCategory(name: "Frozen", icon: "🧊", sortOrder: 7, isDefault: true),
+            FoodCategory(name: "Snacks", icon: "🍿", sortOrder: 8, isDefault: true),
+            FoodCategory(name: "Beverages", icon: "🧃", sortOrder: 9, isDefault: true),
+            FoodCategory(name: "Other", icon: "📦", sortOrder: 10, isDefault: true)
         ]
     }
 }

@@ -312,17 +312,22 @@ class OpenAIService {
                     Use this exact format:
                     {
                         "foodName": "specific name of the food",
-                        "category": "exactly one of: Meat, Vegetables, Fruits, Dairy, Bread, Beverages, Prepared Meals, Other",
+                        "category": "exactly one of: Vegetables, Meat, Fruits, Dairy & Eggs, Seasonings & Sauces, Grains & Pasta, Canned & Packaged, Frozen, Snacks, Beverages, Other",
                         "confidence": "exactly one of: high, medium, low",
                         "additionalInfo": "brief note if relevant or null"
                     }
 
                     Rules:
                     - Be specific with food names (e.g., "Granny Smith Apples" not just "Apples")
-                    - Category must be EXACTLY one of the 8 options listed above (case-sensitive)
-                    - Use "Meat" for all meats, poultry, and fish
-                    - Use "Bread" for bakery items like bread, pastries, cakes
-                    - Use "Prepared Meals" for ready-to-eat meals, leftovers, or meal prep items
+                    - Category must be EXACTLY one of the 11 options listed above (case-sensitive including ampersands)
+                    - Use "Vegetables" for all vegetables including tofu
+                    - Use "Meat" for all meats, poultry, seafood, and fish
+                    - Use "Dairy & Eggs" for milk, cheese, yogurt, eggs, and dairy products
+                    - Use "Seasonings & Sauces" for soy sauce, cooking oil, vinegar, garlic, ginger, spices, condiments, and sauces
+                    - Use "Grains & Pasta" for rice, noodles, pasta, flour, bread, and grain-based staples
+                    - Use "Canned & Packaged" for canned vegetables, canned beans, canned soup, canned tomatoes, jarred items, and pre-packaged shelf-stable foods
+                    - Use "Frozen" for frozen foods, ice cream, and frozen meals
+                    - Use "Snacks" for chips, nuts, crackers, and snack items
                     - Confidence must be EXACTLY one of: high, medium, low
                     - Do not include any markdown formatting or code blocks
                     - Return only the JSON object, nothing else

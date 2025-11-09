@@ -104,7 +104,17 @@ extension Color {
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
+
+        // Use Scanner and check if scanning succeeded
+        let scanner = Scanner(string: hex)
+        let scanSuccess = scanner.scanHexInt64(&int)
+
+        // If scan failed or hex is empty, default to clear/white
+        guard scanSuccess, !hex.isEmpty else {
+            self.init(.sRGB, red: 1.0, green: 1.0, blue: 1.0, opacity: 1.0)
+            return
+        }
+
         let a, r, g, b: Double
 
         switch hex.count {
@@ -125,19 +135,18 @@ extension Color {
             b = Double(int & 0xFF) / 255.0
         default:
             // Default to white for invalid hex strings
-            a = 1.0
-            r = 1.0
-            g = 1.0
-            b = 1.0
+            self.init(.sRGB, red: 1.0, green: 1.0, blue: 1.0, opacity: 1.0)
+            return
         }
 
-        // Ensure all values are clamped between 0.0 and 1.0
+        // Ensure all values are strictly clamped between 0.0 and 1.0
+        // Use explicit sRGB colorspace to avoid UIColor conversion issues
         self.init(
             .sRGB,
-            red: min(max(r, 0.0), 1.0),
-            green: min(max(g, 0.0), 1.0),
-            blue: min(max(b, 0.0), 1.0),
-            opacity: min(max(a, 0.0), 1.0)
+            red: max(0.0, min(1.0, r)),
+            green: max(0.0, min(1.0, g)),
+            blue: max(0.0, min(1.0, b)),
+            opacity: max(0.0, min(1.0, a))
         )
     }
 }
