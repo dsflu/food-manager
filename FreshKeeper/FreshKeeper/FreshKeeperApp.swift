@@ -98,3 +98,46 @@ struct FreshKeeperApp: App {
         .modelContainer(sharedModelContainer)
     }
 }
+
+// Color extension for hex colors - shared across all views
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: Double
+
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            a = 1.0
+            r = Double((int >> 8) * 17) / 255.0
+            g = Double((int >> 4 & 0xF) * 17) / 255.0
+            b = Double((int & 0xF) * 17) / 255.0
+        case 6: // RGB (24-bit)
+            a = 1.0
+            r = Double((int >> 16) & 0xFF) / 255.0
+            g = Double((int >> 8) & 0xFF) / 255.0
+            b = Double(int & 0xFF) / 255.0
+        case 8: // ARGB (32-bit)
+            a = Double((int >> 24) & 0xFF) / 255.0
+            r = Double((int >> 16) & 0xFF) / 255.0
+            g = Double((int >> 8) & 0xFF) / 255.0
+            b = Double(int & 0xFF) / 255.0
+        default:
+            // Default to white for invalid hex strings
+            a = 1.0
+            r = 1.0
+            g = 1.0
+            b = 1.0
+        }
+
+        // Ensure all values are clamped between 0.0 and 1.0
+        self.init(
+            .sRGB,
+            red: min(max(r, 0.0), 1.0),
+            green: min(max(g, 0.0), 1.0),
+            blue: min(max(b, 0.0), 1.0),
+            opacity: min(max(a, 0.0), 1.0)
+        )
+    }
+}
