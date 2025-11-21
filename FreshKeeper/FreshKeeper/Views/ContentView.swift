@@ -18,7 +18,7 @@ struct ContentView: View {
     @Query(sort: \StorageLocation.sortOrder) private var storageLocations: [StorageLocation]
     @Query(sort: \FoodCategory.sortOrder) private var foodCategories: [FoodCategory]
     @State private var showingAddItem = false
-    @State private var showingManageStorage = false
+    @State private var showingOrganization = false
     @State private var showingSettings = false
     @State private var showingDinnerRecommendation = false
     @State private var selectedLocation: StorageLocation?
@@ -88,9 +88,40 @@ struct ContentView: View {
                             let scale = min(max(1 - (offset / -150) * 0.4, 0.6), 1)
 
                             HStack {
-                                Text("FreshKeeper")
-                                    .font(.system(size: 34, weight: .bold, design: .default))
-                                    .foregroundColor(.black)
+                                HStack(spacing: 8) {
+                                    // App icon
+                                    Image(systemName: "leaf.fill")
+                                        .font(.system(size: 28))
+                                        .foregroundStyle(
+                                            LinearGradient(
+                                                colors: [Color(hex: "4CAF50"), Color(hex: "66BB6A")],
+                                                startPoint: .topLeading,
+                                                endPoint: .bottomTrailing
+                                            )
+                                        )
+                                        .shadow(color: Color(hex: "4CAF50").opacity(0.3), radius: 4, x: 0, y: 2)
+
+                                    HStack(spacing: 0) {
+                                        Text("Fresh")
+                                            .font(.system(size: 34, weight: .heavy, design: .rounded))
+                                            .foregroundStyle(
+                                                LinearGradient(
+                                                    colors: [Color(hex: "2E7D32"), Color(hex: "388E3C")],
+                                                    startPoint: .leading,
+                                                    endPoint: .trailing
+                                                )
+                                            )
+                                        Text("Keeper")
+                                            .font(.system(size: 34, weight: .heavy, design: .rounded))
+                                            .foregroundStyle(
+                                                LinearGradient(
+                                                    colors: [Color(hex: "4CAF50"), Color(hex: "66BB6A")],
+                                                    startPoint: .leading,
+                                                    endPoint: .trailing
+                                                )
+                                            )
+                                    }
+                                }
                                 Spacer()
                             }
                             .padding(.horizontal, 20)
@@ -131,32 +162,104 @@ struct ContentView: View {
                 }
                 .coordinateSpace(name: "scroll")
 
-                // Floating Action Button for Dinner Recommendation
+                // Beautiful Floating Chef Button
                 VStack {
                     Spacer()
                     HStack {
                         Spacer()
                         Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                chefButtonScale = 0.95
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+                                    chefButtonScale = 1.0
+                                }
+                            }
                             showingDinnerRecommendation = true
                         } label: {
                             ZStack {
-                                // Background circle with gradient
+                                // Outer glow effect
+                                Circle()
+                                    .fill(
+                                        RadialGradient(
+                                            colors: [
+                                                Color(hex: "FF6B6B").opacity(0.3),
+                                                Color(hex: "FF6B6B").opacity(0.1),
+                                                Color.clear
+                                            ],
+                                            center: .center,
+                                            startRadius: 20,
+                                            endRadius: 40
+                                        )
+                                    )
+                                    .frame(width: 80, height: 80)
+                                    .blur(radius: 8)
+
+                                // Main button with beautiful gradient
                                 Circle()
                                     .fill(
                                         LinearGradient(
-                                            colors: [Color(hex: "FF6B6B"), Color(hex: "FF8E53")],
+                                            colors: [
+                                                Color(hex: "FF6B6B"),
+                                                Color(hex: "FF8E53"),
+                                                Color(hex: "FFA726")
+                                            ],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         )
                                     )
-                                    .frame(width: 56, height: 56)
+                                    .frame(width: 60, height: 60)
+                                    .overlay(
+                                        // Inner white circle for depth
+                                        Circle()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [
+                                                        Color.white.opacity(0.25),
+                                                        Color.white.opacity(0.05)
+                                                    ],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .frame(width: 54, height: 54)
+                                    )
+                                    .overlay(
+                                        // Top highlight for glossy effect
+                                        Ellipse()
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [
+                                                        Color.white.opacity(0.4),
+                                                        Color.clear
+                                                    ],
+                                                    startPoint: .top,
+                                                    endPoint: .center
+                                                )
+                                            )
+                                            .frame(width: 45, height: 25)
+                                            .offset(y: -12)
+                                    )
 
-                                // Classic fork and knife icon - clear and elegant
-                                Image(systemName: "fork.knife")
-                                    .font(.system(size: 24, weight: .semibold))
-                                    .foregroundColor(.white)
+                                // Icon with subtle shadow
+                                ZStack {
+                                    // Shadow for icon
+                                    Image(systemName: "fork.knife")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundColor(.black.opacity(0.2))
+                                        .offset(x: 1, y: 1)
+                                        .blur(radius: 1)
+
+                                    // Main icon
+                                    Image(systemName: "fork.knife")
+                                        .font(.system(size: 24, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
                             }
-                            .shadow(color: Color(hex: "FF6B6B").opacity(0.3), radius: 8, x: 0, y: 4)
+                            .scaleEffect(chefButtonScale)
+                            .shadow(color: Color(hex: "FF6B6B").opacity(0.4), radius: 12, x: 0, y: 6)
+                            .shadow(color: Color(hex: "FF8E53").opacity(0.2), radius: 8, x: 0, y: 3)
                         }
                         .padding(.trailing, 16)
                         .padding(.bottom, 20)
@@ -177,7 +280,7 @@ struct ContentView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     HStack(spacing: 12) {
                         Button {
-                            showingManageStorage = true
+                            showingOrganization = true
                         } label: {
                             Image(systemName: "square.grid.3x3.fill")
                                 .font(.title3)
@@ -229,8 +332,8 @@ struct ContentView: View {
             .sheet(isPresented: $showingAddItem) {
                 AddFoodItemView()
             }
-            .sheet(isPresented: $showingManageStorage) {
-                StorageManagementView()
+            .sheet(isPresented: $showingOrganization) {
+                OrganizationView()
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
@@ -322,7 +425,6 @@ struct ContentView: View {
             .padding(.horizontal)
         }
         .padding(.vertical, 8)
-        .background(Color(hex: "F8F9FA"))
         .contentShape(Rectangle())
         .zIndex(1)
     }
@@ -333,7 +435,6 @@ struct ContentView: View {
             categoryFilterChips
         }
         .padding(.vertical, 8)
-        .background(Color(hex: "F8F9FA"))
         .contentShape(Rectangle())
         .zIndex(1)
     }
@@ -574,30 +675,3 @@ struct FilterChip: View {
     }
 }
 
-// Color extension for hex colors
-extension Color {
-    init(hex: String) {
-        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
-        var int: UInt64 = 0
-        Scanner(string: hex).scanHexInt64(&int)
-        let a, r, g, b: UInt64
-        switch hex.count {
-        case 3: // RGB (12-bit)
-            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
-        case 6: // RGB (24-bit)
-            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
-        case 8: // ARGB (32-bit)
-            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
-        default:
-            (a, r, g, b) = (1, 1, 1, 0)
-        }
-
-        self.init(
-            .sRGB,
-            red: Double(r) / 255,
-            green: Double(g) / 255,
-            blue:  Double(b) / 255,
-            opacity: Double(a) / 255
-        )
-    }
-}

@@ -538,24 +538,37 @@ struct EditCategorySheet: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(foodCategories) { category in
-                    Button {
-                        item.category = category
-                        dismiss()
-                    } label: {
-                        HStack {
-                            Text(category.icon)
-                            Text(category.name)
-                                .foregroundColor(Color(hex: "1A1A1A"))
-                            Spacer()
-                            if item.category?.id == category.id {
-                                Image(systemName: "checkmark")
-                                    .foregroundColor(Color(hex: "4CAF50"))
+            ZStack {
+                // Light background
+                Color(hex: "F8F9FA")
+                    .ignoresSafeArea()
+
+                List {
+                    ForEach(foodCategories) { category in
+                        Button {
+                            item.category = category
+                            dismiss()
+                        } label: {
+                            HStack(spacing: 12) {
+                                Text(category.icon)
+                                    .font(.title2)
+                                Text(category.name)
+                                    .font(.system(.body, design: .rounded))
+                                    .fontWeight(.medium)
+                                    .foregroundColor(Color(hex: "1A1A1A"))
+                                Spacer()
+                                if item.category?.id == category.id {
+                                    Image(systemName: "checkmark.circle.fill")
+                                        .font(.title3)
+                                        .foregroundColor(Color(hex: "4CAF50"))
+                                }
                             }
+                            .padding(.vertical, 8)
                         }
+                        .listRowBackground(Color.white)
                     }
                 }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Change Category")
             .navigationBarTitleDisplayMode(.inline)

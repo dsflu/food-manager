@@ -223,6 +223,7 @@ struct SettingsView: View {
                             .cornerRadius(16)
                         }
 
+
                         // How to get API Key section
                         VStack(alignment: .leading, spacing: 12) {
                             Label("How to get an API Key", systemImage: "questionmark.circle")

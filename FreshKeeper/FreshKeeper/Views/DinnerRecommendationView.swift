@@ -684,25 +684,27 @@ struct DinnerRecommendationView: View {
         }
 
         let prompt = """
-        You are a professional chef specializing in home cooking. SEARCH THE INTERNET for current, authentic recipes and cooking techniques. Create a delicious dinner recommendation that intelligently uses available ingredients while suggesting additional items to buy if needed.
+        You are a professional chef specializing in home cooking. SEARCH THE INTERNET for current, authentic recipes and cooking techniques. Create a delicious dinner recommendation that MAXIMIZES the use of available inventory.
 
-        Available Inventory (prioritize using these, especially expiring items):
+        Available Inventory (USE AS MANY OF THESE AS POSSIBLE, especially expiring items):
         \(inventoryDescription)
 
         Cuisine Preference: \(cuisinePreference)
 
-        IMPORTANT GUIDELINES:
-        1. SEARCH THE WEB for authentic, delicious recipes - don't limit yourself to only the available ingredients
-        2. Create proper, restaurant-quality dishes that people actually want to eat
-        3. INTELLIGENTLY use expiring items where they fit naturally in the recipe
-        4. You CAN and SHOULD suggest additional ingredients to buy from the supermarket to complete the dish
-        5. Mark clearly which ingredients come from inventory (with expiry status) vs. which need to be purchased
-        6. For Chinese cuisine: Be specific about region (川菜/Sichuan, 粤菜/Cantonese, 江浙菜/Jiangzhe, etc.)
-        7. For Western cuisine: ONLY French or Italian allowed. NEVER suggest Chinese when Western is selected.
-        8. Use authentic dish names (e.g., "Coq au Vin" for French, "Carbonara" for Italian, "麻婆豆腐" for Sichuan)
-        9. Recipe steps should be detailed enough for a home cook to follow - base on real recipes from the internet
-        10. CRITICAL: Match cuisine selection - if Western selected, ONLY return French or Italian dishes
-        11. Prioritize recipes that use at least SOME of the available inventory, especially expiring items
+        CRITICAL PRIORITY RULES:
+        1. PRIMARY GOAL: Create a dish that uses MOST of the available inventory items
+        2. ESPECIALLY prioritize using expiring items - they should be the MAIN ingredients
+        3. The recipe MUST use at least 50-70% of ingredients from inventory
+        4. Only suggest buying items if they're truly essential and you're already using most inventory items
+        5. SEARCH THE WEB for authentic recipes that can utilize these specific ingredients
+
+        RECIPE GUIDELINES:
+        6. Mark clearly which ingredients come from inventory (with expiry status) vs. which need to be purchased
+        7. For Chinese cuisine: Be specific about region (川菜/Sichuan, 粤菜/Cantonese, 江浙菜/Jiangzhe, etc.)
+        8. For Western cuisine: ONLY French or Italian allowed. NEVER suggest Chinese when Western is selected.
+        9. Use authentic dish names (e.g., "Coq au Vin" for French, "Carbonara" for Italian, "麻婆豆腐" for Sichuan)
+        10. Recipe steps should be detailed enough for a home cook to follow - base on real recipes from the internet
+        11. CRITICAL: Match cuisine selection - if Western selected, ONLY return French or Italian dishes
 
         LANGUAGE REQUIREMENTS:
         - If creating a Chinese dish: Write the recipe steps in Chinese (简体中文)
@@ -722,17 +724,35 @@ struct DinnerRecommendationView: View {
             "videoSearchChinese": "Chinese search terms - ALWAYS provide (for Chinese: '红烧肉做法', for Western: '意大利肉酱面做法')",
             "videoSearchEnglish": "English search terms - ONLY for Western cuisine (like 'carbonara recipe'), null for Chinese",
             "videoLink": "specific video URL if you know a good tutorial, otherwise null",
-            "reason": "Why this dish makes sense (in English for Western, in Chinese for Chinese cuisine)",
-            "shoppingList": ["Items you need to buy from supermarket", "Include brand suggestions if helpful"]
+            "reason": "Why this dish makes sense - explain which inventory items you used (in English for Western, in Chinese for Chinese cuisine)",
+            "shoppingList": ["ONLY list items you truly need to buy - keep this list SHORT", "Most ingredients should come from inventory"]
         }
         """
 
         let response = try await openAIService.sendTextRequest(prompt: prompt)
 
+        // Log the raw response for debugging
+        print("AI Response: \(response)")
+
+        // Extract JSON from response (handle markdown formatting)
+        let cleanedResponse: String
+        if let jsonStart = response.firstIndex(of: "{"),
+           let jsonEnd = response.lastIndex(of: "}") {
+            // Extract just the JSON portion
+            cleanedResponse = String(response[jsonStart...jsonEnd])
+        } else {
+            cleanedResponse = response
+        }
+
         // Parse JSON response
-        guard let jsonData = response.data(using: .utf8),
-              let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
-            throw NSError(domain: "DinnerRecommendation", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response format"])
+        guard let jsonData = cleanedResponse.data(using: .utf8) else {
+            print("Failed to convert response to data: \(cleanedResponse)")
+            throw NSError(domain: "DinnerRecommendation", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response format - not valid UTF8"])
+        }
+
+        guard let json = try? JSONSerialization.jsonObject(with: jsonData) as? [String: Any] else {
+            print("Failed to parse JSON: \(cleanedResponse)")
+            throw NSError(domain: "DinnerRecommendation", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid response format - not valid JSON"])
         }
 
         // Create recommendation object

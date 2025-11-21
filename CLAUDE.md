@@ -55,13 +55,17 @@ Key design decisions:
 ### View Hierarchy & Navigation
 ```
 ContentView (main grid)
-├── NavigationStack with custom shrinking title
+├── NavigationStack with custom shrinking title (gradient logo)
 ├── LazyVGrid of FoodItemCards
 │   └── NavigationLink → FoodItemDetailView (sheet)
-├── Sheet: AddFoodItemView (with nested AddCustomCategorySheet)
-├── Sheet: StorageManagementView
-├── Sheet: DinnerRecommendationView
-│   └── Sheet: CookbookView (saved recipes)
+│       └── EditCategorySheet (category selection with light background)
+├── Sheet: AddFoodItemView (with AI food recognition)
+├── Sheet: OrganizationView (unified storage locations + categories management)
+│   ├── StorageLocationsTab (drag to reorder, add/edit/delete)
+│   └── CategoriesTab (drag to reorder, add/edit/delete, reinitialize defaults)
+├── Sheet: SettingsView (OpenAI API key and model selection)
+├── Sheet: DinnerRecommendationView (AI recipe generation)
+│   └── Sheet: CookbookView (saved recipes with favorites)
 ├── Floating Action Button: Chef button for dinner recommendations
 └── Filtering: location chips, category selector, search, status filter
 ```
@@ -81,9 +85,10 @@ ContentView (main grid)
 ## Key Implementation Details
 
 ### SwiftData Setup (FreshKeeperApp.swift)
-- ModelContainer initialized with schema for all three models
-- First-launch seeding creates default storage locations (Fridge, Freezer) and 8 categories
+- ModelContainer initialized with schema for all models (FoodItem, StorageLocation, FoodCategory, Recipe)
+- First-launch seeding creates default storage locations (Fridge, Freezer) and 11 food categories
 - Lightweight migration handles schema changes automatically
+- Color extension in FreshKeeperApp.swift for hex color support across all views
 
 ### Filtering Logic (ContentView.swift)
 Filters applied in sequence:
@@ -100,6 +105,28 @@ Computed properties on FoodItem model:
 - `isExpiringSoon`: Within 3 days of expiry
 These drive color-coded badges (red=expired, orange=expiring, blue=fresh).
 
+### Food Categories (11 Default Categories)
+The app uses simplified categories optimized for daily cooking and food storage:
+
+**Fresh Ingredients:**
+- Vegetables 🥬 - All vegetables including tofu
+- Meat 🥩 - Meats, poultry, seafood, fish
+- Fruits 🍎 - Fresh fruits
+- Dairy & Eggs 🥛 - Milk, cheese, yogurt, eggs
+
+**Pantry & Cooking Essentials:**
+- Seasonings & Sauces 🧂 - Soy sauce, cooking oil, vinegar, garlic, ginger, spices, condiments
+- Grains & Pasta 🍚 - Rice, noodles, pasta, flour, bread
+- Canned & Packaged 🥫 - Canned goods, jarred items, shelf-stable packaged foods
+
+**Other:**
+- Frozen 🧊 - Frozen foods, ice cream, frozen meals
+- Snacks 🍿 - Chips, nuts, crackers
+- Beverages 🧃 - Drinks, juices, tea
+- Other 📦 - Miscellaneous items
+
+Users can delete any category (including defaults) and reinitialize them from the Organization settings.
+
 ### Custom Components
 - **FoodItemCard**: Grid display with photo, name, quantity, expiry badge
 - **StatCard**: Metric display (Total Items, Expiring Soon, Expired)
@@ -108,6 +135,7 @@ These drive color-coded badges (red=expired, orange=expiring, blue=fresh).
 - **Direct Quantity Input**: TextField with numeric keyboard for large numbers (tap to edit)
 - **DinnerRecommendationView**: AI-powered recipe generation with cuisine selection
 - **CookbookView**: Browse and manage saved recipes with favorites
+- **OrganizationView**: Unified tabbed interface for managing storage locations and categories
 
 ### OpenAI Integration (Services/OpenAIService.swift)
 - **API Key Storage**: Secure storage in iOS Keychain (never hardcoded)
@@ -115,7 +143,10 @@ These drive color-coded badges (red=expired, orange=expiring, blue=fresh).
 - **Dinner Recommendations**: Text API generates recipes based on inventory
 - **Model Selection**: GPT-4.1-nano (cheap) or GPT-4o-mini (accurate)
 - **Image Optimization**: Auto-resize to 1024x1024, JPEG compression
-- **Categories**: Meat, Vegetables, Fruits, Dairy, Bread, Beverages, Prepared Meals, Other
+- **Categories** (11 total):
+  - Fresh: Vegetables, Meat, Fruits, Dairy & Eggs
+  - Pantry: Seasonings & Sauces, Grains & Pasta, Canned & Packaged
+  - Other: Frozen, Snacks, Beverages, Other
 - **Settings View**: Configure API key and model preferences
 - **Internet Search**: AI searches web for current, authentic recipes
 
@@ -202,8 +233,15 @@ Manual testing focus areas:
 - Added AI-powered food recognition using GPT-4 vision models
 - Secure API key storage in iOS Keychain
 - Model selection between GPT-4.1-nano (cost-effective) and GPT-4o-mini (accurate)
-- Automatic category matching with app's 8 predefined categories
+- Automatic category matching with app's 11 predefined categories
 - Image optimization to reduce API costs
+
+### UI/UX Improvements
+- **Unified Organization View**: Combined storage locations and categories into one tabbed interface
+- **Category Management**: Drag to reorder, delete any category (including defaults), reinitialize defaults
+- **Gradient App Title**: Stylish "FreshKeeper" logo with leaf icon
+- **Light Category Selection**: Fixed black background issue in category picker
+- **Color Extension**: Robust hex color handling with proper validation and clamping
 
 ### Enhanced Quantity Input
 - Direct text input for quantities (tap the number to edit)

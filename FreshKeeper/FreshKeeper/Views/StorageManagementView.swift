@@ -13,6 +13,7 @@ struct StorageManagementView: View {
 
     @State private var showingAddLocation = false
     @State private var editingLocation: StorageLocation?
+    @State private var editMode: EditMode = .inactive
 
     var body: some View {
         NavigationStack {
@@ -48,8 +49,8 @@ struct StorageManagementView: View {
                             .cornerRadius(12)
                             .padding(.horizontal)
 
-                            // Storage Locations List
-                            VStack(spacing: 12) {
+                            // Storage Locations List with optional reordering
+                            List {
                                 ForEach(storageLocations) { location in
                                     StorageLocationRow(
                                         location: location,
@@ -60,9 +61,26 @@ struct StorageManagementView: View {
                                             deleteLocation(location)
                                         }
                                     )
+                                    .listRowBackground(Color.clear)
+                                    .listRowSeparator(.hidden)
+                                    .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
+                                }
+                                .onMove { source, destination in
+                                    moveLocations(from: source, to: destination)
+                                }
+                                .onDelete { indexSet in
+                                    for index in indexSet {
+                                        let location = storageLocations[index]
+                                        if !location.isDefault {
+                                            modelContext.delete(location)
+                                        }
+                                    }
                                 }
                             }
-                            .padding(.horizontal)
+                            .listStyle(PlainListStyle())
+                            .environment(\.editMode, $editMode)
+                            .frame(height: CGFloat(storageLocations.count * 100))
+                            .scrollDisabled(true)
                         }
                         .padding(.vertical)
                     }
@@ -78,12 +96,27 @@ struct StorageManagementView: View {
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showingAddLocation = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title3)
-                            .foregroundColor(Color(hex: "4CAF50"))
+                    HStack(spacing: 16) {
+                        // Edit/Reorder button
+                        Button {
+                            withAnimation {
+                                editMode = editMode == .active ? .inactive : .active
+                            }
+                        } label: {
+                            Text(editMode == .active ? "Done" : "Reorder")
+                                .font(.system(.body, design: .rounded))
+                                .fontWeight(.medium)
+                                .foregroundColor(Color(hex: "2196F3"))
+                        }
+
+                        // Add button
+                        Button {
+                            showingAddLocation = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title3)
+                                .foregroundColor(Color(hex: "4CAF50"))
+                        }
                     }
                 }
             }
@@ -129,6 +162,22 @@ struct StorageManagementView: View {
         guard !location.isDefault else { return }
         modelContext.delete(location)
     }
+
+    private func moveLocations(from source: IndexSet, to destination: Int) {
+        // Create a mutable array from the sorted locations
+        var mutableLocations = Array(storageLocations)
+
+        // Move the items
+        mutableLocations.move(fromOffsets: source, toOffset: destination)
+
+        // Update sortOrder for all locations
+        for (index, location) in mutableLocations.enumerated() {
+            location.sortOrder = index
+        }
+
+        // Save changes
+        try? modelContext.save()
+    }
 }
 
 struct StorageLocationRow: View {
@@ -143,7 +192,7 @@ struct StorageLocationRow: View {
             // Icon
             ZStack {
                 Circle()
-                    .fill(Color(hex: location.colorHex).opacity(0.2))
+                    .fill(Color(hex: location.colorHex, opacity: 0.2))
                     .frame(width: 50, height: 50)
 
                 Image(systemName: location.icon)
@@ -203,7 +252,7 @@ struct StorageLocationRow: View {
         .padding()
         .background(Color.white)
         .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 5, x: 0, y: 2)
+        .shadow(color: Color(red: 0, green: 0, blue: 0, opacity: 0.05), radius: 5, x: 0, y: 2)
         .confirmationDialog(
             "Delete \(location.name)?",
             isPresented: $showDeleteConfirmation,
